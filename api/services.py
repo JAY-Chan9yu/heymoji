@@ -4,7 +4,9 @@ from pydantic.main import BaseModel
 
 from models.users import crud
 
-REACTION_TYPE = 'heart'
+REACTION = 'heart'
+REMOVED_REACTION = 'reaction_removed'
+ADDED_REACTION = 'reaction_added'
 
 
 class SlackEventHook(BaseModel):
@@ -47,11 +49,26 @@ class SlackService(object):
 
         if "event" in event:
             event_dto = EventDto(event['event'])
-            self.increase_emoji_count(event_dto, db)
+            # 다른 사람에게만 이모지 줄 수 있음
+            if event_dto.item_user != event_dto.user:
+                self.assign_emoji(event_dto, db)
 
         return {}
 
-    def increase_emoji_count(self, event: EventDto, db):
-        if event.reaction == REACTION_TYPE:
-            crud.update_user(db, event.item_user)
-        return {}
+    def assign_emoji(self, event: EventDto, db):
+        if event.reaction != REACTION:
+            return
+
+        if event.type == ADDED_REACTION:
+            user = crud.get_user(db, event.user)
+            # 다른사람에게 이모지 줄 수 있는 카운트 남아 있는지 체크
+            if user.using_emoji_count > 1:
+                crud.update_using_emoji_count(db, user, False)
+                crud.update_get_emoji(db, event.item_user, True)
+
+        elif event.type == REMOVED_REACTION:
+            user = crud.get_user(db, event.user)
+            # 이모지 추가한걸 취소한 경우
+            if user.using_emoji_count < 5:
+                crud.update_using_emoji_count(db, user, True)
+                crud.update_get_emoji(db, event.item_user, False)
