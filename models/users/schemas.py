@@ -20,3 +20,16 @@ class User(UserBase):
 
     class Config:
         orm_mode = True
+
+
+class SlackEventHook(BaseModel):
+    token: str
+    team_id: str
+    api_app_id: str
+    event: dict
+    type: str
+    event_id: str
+    event_time: int
+    authorizations: list
+    is_ext_shared_channel: bool
+    event_context: str
