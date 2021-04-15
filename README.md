@@ -78,7 +78,7 @@ https://api.slack.com/apps에 접속하여 create app 버튼을 클릭한 후, <
 
 
 ## 프론트 예제 📲
-![image](https://user-images.githubusercontent.com/24591259/114949086-40d0ca80-9e8b-11eb-82fb-1ea108725963.png)
+![vllo](https://user-images.githubusercontent.com/24591259/114949520-29461180-9e8c-11eb-9639-1f79e4dea4a3.GIF)
 
 간단하게 ``vue``프로젝트에서 `emoji_rank`의 api를 호출해 **User list**를 보여주도록 만들어 봤습니다.<br/>
 이모지 추가, 제거 event에 따라 서버에서 count 로직을 처리해주는걸 확인 할 수 있습니다.
