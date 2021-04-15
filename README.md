@@ -6,7 +6,7 @@
 FastAPI에 구조나 프로젝트 관련된 추가기능, 개선사항 ``PR``은 언제나 환영입니다! 
 <br/>
 
-## Server 구성
+## Server 🖥
 ### 1. 개요 👋
 ``emoji_rank``는 ``Python 3.7.9``, ``FastAPI`` 로 개발되었습니다.<br/> 
 그 외 버전에서 패키지 및 동작에 대한 호환은 보장하지 않습니다. (근데 거의 다 될거에요 python 3 이상이면...아마두~😁 )
@@ -17,7 +17,7 @@ FastAPI에 구조나 프로젝트 관련된 추가기능, 개선사항 ``PR``은
 pip install -r requirements
 ```
 
-### 3. DB 세팅 🗂
+### 3. DB 세팅 💾
 DB는 ``MySQL``을 사용합니다. 다른 DB 사용하려면 config 설정이 조금 달라질 수 있습니다.
 `conf/database.py`, `scripts/update` 에서 HOST, PORT, DATABASE, USER, PASSWORD 로컬 환경에 맞게 변경합니다.
 
@@ -45,7 +45,7 @@ $PYTHON_PATH $SCRIPT_PATH
 
 ❤️ 가 아닌 다른 ``Emoji``를 사용하려면 ``services.py``의 ``REACTION = 'heart'``를 변경하세요!
 
-## Slack Bot 설정 🤖
+## Slack Bot 🤖
 <img src="https://user-images.githubusercontent.com/24591259/114943304-bf743a80-9e80-11eb-85ad-30cb26591ea3.png" width="400px"/>
 
 https://api.slack.com/apps에 접속하여 create app 버튼을 클릭한 후, <br/>
