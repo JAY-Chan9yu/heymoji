@@ -81,7 +81,7 @@ class SlackService(object):
         if event.type == ADDED_REACTION:
             user = crud.get_user(db, event.user)
             # 다른사람에게 이모지 줄 수 있는 카운트 남아 있는지 체크
-            if user.using_emoji_count > 1:
+            if user.using_emoji_count > 0:
                 crud.update_using_emoji_count(db, user, False)
                 crud.update_get_emoji(db, event.item_user, True)
 
