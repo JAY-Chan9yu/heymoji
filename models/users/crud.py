@@ -1,3 +1,4 @@
+from sqlalchemy import desc
 from sqlalchemy.orm import Session
 
 from models.users import models, schemas
@@ -9,7 +10,8 @@ def get_user(db: Session, item_user: str):
 
 
 def get_users(db: Session, skip: int = 0, limit: int = 100):
-    return db.query(models.User).offset(skip).limit(limit).all()
+    # return db.query(models.User).offset(skip).limit(limit).all()
+    return db.query(models.User).order_by(desc(models.User.get_emoji_count)).offset(skip).limit(limit).all()
 
 
 def create_user(db: Session, user: schemas.UserCreate):
