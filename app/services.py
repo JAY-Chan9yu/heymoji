@@ -84,16 +84,18 @@ class SlackService(object):
         if event.type == ADDED_REACTION:
             user = crud.get_user(db, event.user)
             # 다른사람에게 이모지 줄 수 있는 카운트 남아 있는지 체크
-            if user.using_emoji_count > 0:
-                crud.update_using_emoji_count(db, user, False)
-                crud.update_get_emoji(db, event.item_user, True)
+            if user.my_reaction > 0:
+                crud.check_reaction(db, user, False)
+                crud.update_added_reaction(db=db, type=event.reaction, item_user=event.item_user,
+                                           user=event.user, is_increase=True)
 
         elif event.type == REMOVED_REACTION:
             user = crud.get_user(db, event.user)
             # 이모지 추가한걸 취소한 경우
-            if user.using_emoji_count < 5:
-                crud.update_using_emoji_count(db, user, True)
-                crud.update_get_emoji(db, event.item_user, False)
+            if user.my_reaction < 5:
+                crud.check_reaction(db, user, True)
+                crud.update_added_reaction(db=db, type=event.reaction, item_user=event.item_user,
+                                           user=event.user, is_increase=False)
 
     def manage_app_mention(self, event: EventDto, db):
         """
