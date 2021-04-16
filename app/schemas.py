@@ -1,28 +1,56 @@
+from datetime import date
+
 from pydantic import BaseModel
 
 
-class UserBase(BaseModel):
-    slack_id: str
-
-
-class UserCreate(BaseModel):
-    username: str
-    slack_id: str
-    get_emoji_count: int
-    using_emoji_count: int
-    avatar_url: str
-
-
-class User(UserBase):
+# about User
+class User(BaseModel):
     id: int
     username: str
-    get_emoji_count: int
-    using_emoji_count: int
+    slack_id: str
+    my_reaction: int
 
     class Config:
         orm_mode = True
 
 
+class UserCreate(BaseModel):
+    username: str
+    slack_id: str
+    avatar_url: str
+
+
+class UserReaction(BaseModel):
+    username: str
+    slack_id: str
+    avatar_url: str
+    my_reaction: int
+    total_reaction: int
+
+
+# about Reaction
+class Reaction(BaseModel):
+    id: int
+    year: int
+    month: int
+    to_user: int
+    from_user: int
+    type: str
+    count: int
+
+    class Config:
+        orm_mode = True
+
+
+class ReactionCreate(BaseModel):
+    year: int
+    month: int
+    to_user: int
+    from_user: int
+    type: str
+
+
+# ETC
 class SlackEventHook(BaseModel):
     token: str
     team_id: str

@@ -17,7 +17,8 @@ class Reaction(database.Base):
     __tablename__ = "reactions"
 
     id = Column(Integer, primary_key=True, index=True)
-    created = Column(Date, index=True) # 생성일
+    year = Column(Integer, nullable=False)
+    month = Column(Integer, nullable=False)
     to_user = Column(Integer, ForeignKey("users.id")) # 리액션을 받은 유저
     from_user = Column(Integer, ForeignKey("users.id")) # 리액션을 보낸 유저
     type = Column(String(50), nullable=True) # 리액션 타압 (이모지 종류)
