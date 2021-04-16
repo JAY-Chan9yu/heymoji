@@ -1,12 +1,10 @@
 import pymysql
 
-HOST = 'host'
-DATABASE = 'database'
-USER = 'user'
-PASSWORD = 'password'
+from conf.config import Settings
 
-#DB에 접속
-connection = pymysql.connect(host=HOST, user=USER, password=PASSWORD, db=DATABASE)
+settings = Settings(_env_file='prod.env')
+connection = pymysql.connect(host=settings.HOST, user=settings.USERNAME,
+                             password=settings.PASSWORD, db=settings.DATABASE)
 
 with connection:
     with connection.cursor() as cursor:
