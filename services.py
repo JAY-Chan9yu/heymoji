@@ -1,7 +1,5 @@
 from dataclasses import dataclass
 
-from pydantic.main import BaseModel
-
 from models.users import crud
 from models.users.schemas import UserCreate, SlackEventHook
 
@@ -49,10 +47,12 @@ class CommandDto:
 class AddUserCommandDto:
     user_name: str
     slack_id: str
+    avatar_url: str
 
-    def __init__(self, user_name: str, slack_id: str):
+    def __init__(self, user_name: str, slack_id: str, avatar_url: str):
         self.user_name = user_name
         self.slack_id = slack_id
+        self.avatar_url = avatar_url
 
 
 class SlackService(object):
@@ -75,6 +75,9 @@ class SlackService(object):
         return {}
 
     def assign_emoji(self, event: EventDto, db):
+        """
+        reaction process
+        """
         if event.reaction != REACTION:
             return
 
@@ -93,7 +96,11 @@ class SlackService(object):
                 crud.update_get_emoji(db, event.item_user, False)
 
     def manage_app_mention(self, event: EventDto, db):
-        # ex: ['<@ABCDFEFG>', 'create_user', 'jay-ABCDEFGS']
+        """
+        명령어를 분기 처리하는 함수
+        ex: ['<@ABCDFEFG>', 'create_user', '{{username}}-{{slack_id}}-{{AVATAR_URL}}']
+        """
+
         mention_data = event.text.split(' ')
         if len(mention_data) < 3:
             return
@@ -103,15 +110,18 @@ class SlackService(object):
             self.add_user(cmd_dto.cmd, db)
 
     def add_user(self, cmd: str, db):
+        """
+        user 추가 명령어
+        """
         command = cmd.split('-')
-        if len(command) < 2:
+        if len(command) < 3:
             return
 
-        add_cmd_dto = AddUserCommandDto(user_name=command[0], slack_id=command[1])
+        add_cmd_dto = AddUserCommandDto(user_name=command[0], slack_id=command[1], avatar_url=command[2])
         db_user = crud.get_user(db, item_user=add_cmd_dto.slack_id)
         if db_user:
             return
 
         user = UserCreate(username=add_cmd_dto.user_name, slack_id=add_cmd_dto.slack_id,
-                          using_emoji_count=5, get_emoji_count=0)
+                          using_emoji_count=5, get_emoji_count=0, avatar_url=add_cmd_dto.avatar_url)
         crud.create_user(db=db, user=user)

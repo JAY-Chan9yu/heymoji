@@ -10,6 +10,7 @@ class UserCreate(BaseModel):
     slack_id: str
     get_emoji_count: int
     using_emoji_count: int
+    avatar_url: str
 
 
 class User(UserBase):

@@ -6,7 +6,7 @@ from services import SlackService
 from conf.database import get_db, engine, Base
 from models.users import schemas, crud
 
-#Base.metadata.drop_all(bind=engine)
+# Base.metadata.drop_all(bind=engine)
 Base.metadata.create_all(bind=engine)
 app = FastAPI()
 
