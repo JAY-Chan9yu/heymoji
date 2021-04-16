@@ -1,3 +1,7 @@
+# TODO: python 모듈 경로 찾는 부분과 FastAPI 구조 잡는 부분 제대로 파착하기
+import sys
+sys.path.insert(0, '{{ 절대경로 }}/emoji_rank')
+
 from typing import Optional
 
 from fastapi import FastAPI, Request, Depends, HTTPException
@@ -7,6 +11,7 @@ from starlette.middleware.cors import CORSMiddleware
 from services import SlackService
 from conf.database import get_db, engine, Base
 from app import crud, schemas
+
 
 # Base.metadata.drop_all(bind=engine)
 Base.metadata.create_all(bind=engine)
