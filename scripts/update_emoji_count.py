@@ -8,7 +8,7 @@ connection = pymysql.connect(host=settings.HOST, user=settings.USERNAME,
 
 with connection:
     with connection.cursor() as cursor:
-        sql = "UPDATE slack_user SET using_emoji_count = 5"
+        sql = "UPDATE slack_user SET my_reaction = 5"
         cursor.execute(sql)
 
     connection.commit()
