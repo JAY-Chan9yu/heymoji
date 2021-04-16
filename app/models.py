@@ -1,14 +1,24 @@
-from sqlalchemy import Column, Integer, String, Float, Boolean
+from sqlalchemy import Column, Integer, String, Date, ForeignKey
 
 from conf import database
 
 
 class User(database.Base):
-    __tablename__ = "slack_user"
+    __tablename__ = "users"
 
     id = Column(Integer, primary_key=True, index=True)
     username = Column(String(100), nullable=True) # display name
     slack_id = Column(String(50), nullable=False) # 슬랙 아이디
-    get_emoji_count = Column(Integer, nullable=False, default=0) # 받은 이모지 개수
-    using_emoji_count = Column(Integer, nullable=False, default=0) # 사용할 수 있는 이모지 개수
+    my_reaction = Column(Integer, nullable=False, default=5) # 사용할 수 있는 리액션(이모지) 개수
     avatar_url = Column(String(100), nullable=True)  # 프로필 이미지 url
+
+
+class Reaction(database.Base):
+    __tablename__ = "reactions"
+
+    id = Column(Integer, primary_key=True, index=True)
+    created = Column(Date, index=True) # 생성일
+    to_user = Column(Integer, ForeignKey("users.id")) # 리액션을 받은 유저
+    from_user = Column(Integer, ForeignKey("users.id")) # 리액션을 보낸 유저
+    type = Column(String(50), nullable=True) # 리액션 타압 (이모지 종류)
+    count = Column(Integer, default=0) # 받은 개수
