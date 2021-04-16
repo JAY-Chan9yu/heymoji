@@ -21,7 +21,7 @@ def get_users(db: Session, year: int, month: int):
     # TODO: sqlalchemy ORM이 익숙하지 않아 raw Query 사용 -> ORM으로 변환해보기
     _filter = ''
     if year and month:
-        _filter = f'where month={year} AND month={month}'
+        _filter = f'where year={year} AND month={month}'
     elif year:
         _filter = f'where year={year}'
     elif year:
