@@ -4,7 +4,7 @@ from starlette.middleware.cors import CORSMiddleware
 
 from services import SlackService
 from conf.database import get_db, engine, Base
-from models.users import schemas, crud
+from app import crud, schemas
 
 # Base.metadata.drop_all(bind=engine)
 Base.metadata.create_all(bind=engine)

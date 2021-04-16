@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 
-from models.users import crud
-from models.users.schemas import UserCreate, SlackEventHook
+from app import crud
+from app.schemas import UserCreate, SlackEventHook
 
 # about reaction
 REACTION = 'heart'

@@ -1,8 +1,8 @@
 from sqlalchemy import desc
 from sqlalchemy.orm import Session
 
-from models.users import models, schemas
-from models.users.models import User
+from app import models, schemas
+from app.models import User
 
 
 def get_user(db: Session, item_user: str):
