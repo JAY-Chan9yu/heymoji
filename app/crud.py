@@ -51,14 +51,14 @@ def create_user(db: Session, user: schemas.UserCreate):
 
 def update_added_reaction(db: Session, type: str, item_user: str, user: str, is_increase: bool):
     """
-    :param item_user: 리액션을 받는 유저
-    :param type: 리액션 타입(이모지 종류)
+    :param item_user: 리액션을 받는 유저 -> to_user
+    :param type: 리액션 타입(이모지 종류) -> from_user
     :param user: 리액션을 한 유저
     :param is_increase: count 증가/감소
     """
     # ex: session.query(MyUserClass).filter(MyUserClass.id.in_((123,456))).all()
-    from_user = db.query(User).filter(User.slack_id == item_user).one_or_none()
-    to_user = db.query(User).filter(User.slack_id == user).one_or_none()
+    from_user = db.query(User).filter(User.slack_id == user).one_or_none()
+    to_user = db.query(User).filter(User.slack_id == item_user).one_or_none()
 
     if to_user is None or from_user is None:
         return
