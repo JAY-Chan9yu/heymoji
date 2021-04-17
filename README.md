@@ -9,7 +9,7 @@ FastAPI에 구조나 프로젝트 관련된 추가기능, 개선사항 ``PR``은
 ## Server 🖥
 ### 1. 개요 👋
 ``emoji_rank``는 ``Python 3.7.9``, ``FastAPI`` 로 개발되었습니다.<br/> 
-그 외 버전에서 패키지 및 동작에 대한 호환은 보장하지 않습니다. (근데 거의 다 될거에요 python 3 이상이면...아마두~😁 )
+그 외 버전에서 패키지 및 동작에 대한 호환은 보장하지 않습니다. (근데 거의 다 될거에요 python 3 이상이면...아마두~😁 )<br/>
 
 
 ### 2. 패키지 설치 ⚙️
@@ -17,17 +17,62 @@ FastAPI에 구조나 프로젝트 관련된 추가기능, 개선사항 ``PR``은
 pip install -r requirements
 ```
 
-### 3. DB 세팅 💾
-DB는 ``MySQL``을 사용합니다. 다른 DB 사용하려면 config 설정이 조금 달라질 수 있습니다.
-`conf/database.py`, `scripts/update` 에서 HOST, PORT, DATABASE, USER, PASSWORD 로컬 환경에 맞게 변경합니다.
+### 3. 세팅 💾
+``settings.py``에서 DB세팅 및 환경변수등을 수정할 수 있습니다<br/>
+DB는 ``MySQL``을 사용합니다. 다른 DB 사용하려면 `config` 설정이 조금 달라질 수 있습니다.
+
+|이름|설명|
+|----|----|
+|DataBaseSettings|DB 세팅 관련된 변수들 담고있는 DTO|
+|DAY_MAX_REACTION|하루 최대 사용할 수 있는 Reacion 개수|
+|REACTION_LIST|reaction 카운트 허용할 Emoji list|
+
+`DataBaseSettings` 에서 `HOST`, `PORT`, `DATABASE`, `USER`, `PASSWORD` 로컬 환경에 맞게 변경합니다.<br/>
 
 ### 4. 실행 💡
-main.py가 있는 root경로에 가서 <a href="https://www.uvicorn.org/">uvicorn</a>으로 서버를 실행시킵니다.
+main.py가 있는 root경로에 가서 <a href="https://www.uvicorn.org/">uvicorn</a>으로 서버를 실행시킵니다.<br/>
+백그라운드로 실행하기 위해서는 `&`를 마지막에 붙여주세요.
 ```
 uvicorn main:app --port 8080
 ```
+만약 백그라운드에서 실행되고 있는 프로세스를 제거하고싶은 경우
+```
+1. ps aux | grep uvicorn
+2. kill -9 {PID} 
+```
+잘못된 프로세스 kill을 주의하세요!<br/>
 
-### 5. 배치 스크립트 크론탭 등록 🏃🏻‍♂️
+### 5. 프로세스 Live 체크 🧟‍♂️
+shell script로 간단하게 Live 체크를 진행 할 수 있습니다.. 크론탭에 1분마다 실행하도록 등록.<br/>
+로깅도 추가하면 좋습니다.
+```
+#! /bin/bash
+PYTHON_PATH=/{{ path }}/venv/bin/python
+SCRIPT_PATH=/{{ path }}/emoji_rank/app
+
+checker=`ps aux | grep -v "grep" | grep "{{ 검색할 이름}}" | wc -l`
+
+if [ "$checker" == "0" ]; then
+	source '{{ path }}/venv/bin/activate'
+	cd $SCRIPT_PATH && `uvicorn main:app --port 8080 &`
+fi
+```
+
+### 6. API 문서 및 테스트 📝
+``HOST_URL/docs``로 접속하면 ``Swagger``로 만들어진 web 페이지를 확인할 수 있습니다. (FastAPI는 swagger를 default로 지원) 
+<img src="https://user-images.githubusercontent.com/24591259/115111371-09f9d200-9fbb-11eb-8115-e0ff86d677fd.png" width="400px"/>
+<br/>
+
+### 7. 슬랙 커맨드 👾
+슬랙에서 create_user 명령어로 유저를 추가할 수도 있습니다.<br/>
+명령어를 커스텀 할 수도 있어요! (추가로 event 권한 추가해야 할 수 도있습니다.)<br/>
+공통으로 사용 가능한 커스텀 명령어는 PR 주시면 감사하겠습니다!
+```
+ex) 실제 사용시 '{{ }}' 는 제거해주세요
+@슬랙봇 --create_user --name={{이름}} --slack_id={{슬랙ID}} --avatar_url={{이미지URL}}
+```
+
+### 8. 배치 스크립트 크론탭 등록 🏃🏻‍♂️
 멤버당 하루에 5개씩 지정한 Emoji를 다른 멤버에게 줄 수 있도록 했습니다.<br/>
 매일 자정에 다시 5개로 리셋하는 배치 스크립트를 ``크론탭``에 등록합니다.<br/>
 저는 ``쉘스크립트``를 만들어서 ``크론탭``에 등록했습니다.
@@ -42,8 +87,6 @@ source '{{ path }}/venv/bin/activate'
 $PYTHON_PATH $SCRIPT_PATH
 ```
 <br/>
-
-❤️ 가 아닌 다른 ``Emoji``를 사용하려면 ``services.py``의 ``REACTION = 'heart'``를 변경하세요!
 
 ## Slack Bot 🤖
 <img src="https://user-images.githubusercontent.com/24591259/114943304-bf743a80-9e80-11eb-85ad-30cb26591ea3.png" width="400px"/>
@@ -78,11 +121,8 @@ https://api.slack.com/apps에 접속하여 create app 버튼을 클릭한 후, <
 
 
 ## 프론트 예제 📲
-![vllo](https://user-images.githubusercontent.com/24591259/114949520-29461180-9e8c-11eb-9639-1f79e4dea4a3.GIF)
+![vllo 5](https://user-images.githubusercontent.com/24591259/115112136-0405f000-9fbf-11eb-8fcf-9527d0bc5188.GIF)
 
 간단하게 ``vue``프로젝트에서 `emoji_rank`의 api를 호출해 **User list**를 보여주도록 만들어 봤습니다.<br/>
 이모지 추가, 제거 event에 따라 서버에서 count 로직을 처리해주는걸 확인 할 수 있습니다.
 <a href="https://github.com/JAY-Chan9yu/emoji_rank_web">Emoji rank web<a/> 프로젝트를 **clone** 해서 확인해보세요😃
-
-
-
