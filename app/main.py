@@ -1,6 +1,10 @@
-# TODO: python 모듈 경로 찾는 부분과 FastAPI 구조 잡는 부분 제대로 파착하기
 import sys
-sys.path.insert(0, '{{ 절대경로 }}/emoji_rank')
+import os
+
+# 모듈 경로를 못찾는 경우가 있어서 sys.path 에 경로 추가 (IDE를 사용하면 잘 찾음)
+script_dir = os.path.dirname(os.path.abspath(__file__))
+if os.path.dirname(script_dir) not in sys.path:
+    sys.path.insert(0, os.path.dirname(script_dir))
 
 from typing import Optional
 

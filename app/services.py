@@ -3,8 +3,9 @@ from dataclasses import dataclass
 from app import crud
 from app.schemas import UserCreate, SlackEventHook
 
+from app.settings import REACTION_LIST, DAY_MAX_REACTION
+
 # about reaction
-REACTION = 'heart'
 REMOVED_REACTION = 'reaction_removed'
 ADDED_REACTION = 'reaction_added'
 APP_MENTION_REACTION = 'app_mention'
@@ -79,7 +80,7 @@ class SlackService(object):
         """
         reaction process
         """
-        if event.reaction != REACTION:
+        if event.reaction not in REACTION_LIST:
             return
 
         if event.type == ADDED_REACTION:
@@ -93,7 +94,7 @@ class SlackService(object):
         elif event.type == REMOVED_REACTION:
             user = crud.get_user(db, event.user)
             # 멤버에게 전달한 reaction을 삭제하는 경우 (이미 하루 최대의 reaction 개수인 경우 더이상 추가하지 않음)
-            if user.my_reaction < 5:
+            if user.my_reaction < DAY_MAX_REACTION:
                 crud.update_my_reaction(db, user, True)
                 crud.update_added_reaction(db=db, type=event.reaction, item_user=event.item_user,
                                            user=event.user, is_increase=False)
@@ -126,5 +127,5 @@ class SlackService(object):
             return
 
         user = UserCreate(username=add_cmd_dto.user_name, slack_id=add_cmd_dto.slack_id,
-                          using_emoji_count=5, get_emoji_count=0, avatar_url=add_cmd_dto.avatar_url)
+                          using_emoji_count=DAY_MAX_REACTION, get_emoji_count=0, avatar_url=add_cmd_dto.avatar_url)
         crud.create_user(db=db, user=user)
