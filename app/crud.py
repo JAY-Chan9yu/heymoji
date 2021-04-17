@@ -13,19 +13,19 @@ def get_user(db: Session, item_user: str):
 
 def get_users(db: Session, year: int, month: int):
     """
-    :param db:
     :param year: 년
     :param month: 월
     """
 
     # TODO: sqlalchemy ORM이 익숙하지 않아 raw Query 사용 -> ORM으로 변환해보기
-    _filter = ''
     if year and month:
-        _filter = f'where year={year} AND month={month}'
+        _filter = f'WHERE year={year} AND month={month}'
     elif year:
-        _filter = f'where year={year}'
+        _filter = f'WHERE year={year}'
     elif year:
-        _filter = f'where month={month}'
+        _filter = f'WHERE month={month}'
+    else:
+        _filter = ''
 
     return db.query(
         literal_column("avatar_url"),
@@ -33,10 +33,10 @@ def get_users(db: Session, year: int, month: int):
         literal_column("my_reaction"),
         literal_column("received_reaction")
     ).from_statement(text(
-        "select avatar_url, username, my_reaction, IFNULL(re.count, 0) as received_reaction "
-        "from users left outer join ("
-        f"select to_user, sum(count) as count from reactions {_filter} group by to_user) "
-        "as re on re.to_user = users.id order by received_reaction desc")
+        "SELECT avatar_url, username, my_reaction, IFNULL(re.count, 0) AS received_reaction "
+        "FROM users LEFT OUTER JOIN ("
+        f"SELECT to_user, SUM(count) AS count FROM reactions {_filter} GROUP BY to_user) "
+        "AS re ON re.to_user = users.id ORDER BY received_reaction DESC")
     ).all()
 
 
@@ -54,9 +54,8 @@ def update_added_reaction(db: Session, type: str, item_user: str, user: str, is_
     :param item_user: 리액션을 받는 유저 -> to_user
     :param type: 리액션 타입(이모지 종류) -> from_user
     :param user: 리액션을 한 유저
-    :param is_increase: count 증가/감소
+    :param is_increase: True: Added, False: Removed
     """
-    # ex: session.query(MyUserClass).filter(MyUserClass.id.in_((123,456))).all()
     from_user = db.query(User).filter(User.slack_id == user).one_or_none()
     to_user = db.query(User).filter(User.slack_id == item_user).one_or_none()
 
@@ -69,9 +68,11 @@ def update_added_reaction(db: Session, type: str, item_user: str, user: str, is_
         Reaction.from_user == from_user.id, Reaction.to_user == to_user.id
     ).first()
 
-    # 1. 리액션이 있는경우
-    # 2  리액션이 없는데 감소 해야하는 경우 return
-    # 3. 리액션이 없는데 증가해야하는 경우
+    """
+    1. 리액션이 있는경우 (remove 인 경우 받은 reaction이 0개 인 경우 return)
+    2  리액션이 없는데 감소 해야하는 경우 return
+    3. 리액션이 없는데 증가해야하는 경우
+    """
     if reaction:
         if is_increase is False and reaction.count == 0:
             return
@@ -88,11 +89,12 @@ def update_added_reaction(db: Session, type: str, item_user: str, user: str, is_
     db.refresh(reaction)
 
 
-def check_reaction(db: Session, user: User, is_increase: bool):
-    if is_increase:
-        user.my_reaction += 1
-    else:
-        user.my_reaction -= 1
+def update_my_reaction(db: Session, user: User, is_increase: bool):
+    """
+    내가 가지고 있는 reaction count 업데이트
+    :param is_increase: True: Added, False: Removed
+    """
+    user.my_reaction += 1 if is_increase else -1
 
     db.add(user)
     db.commit()

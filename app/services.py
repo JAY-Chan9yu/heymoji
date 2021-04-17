@@ -62,6 +62,7 @@ class SlackService(object):
         if 'challenge' in event:
             return {"challenge": event['challenge']}
 
+        # check slack event
         if "event" in event:
             event_dto = EventDto(event['event'])
 
@@ -83,17 +84,17 @@ class SlackService(object):
 
         if event.type == ADDED_REACTION:
             user = crud.get_user(db, event.user)
-            # 다른사람에게 이모지 줄 수 있는 카운트 남아 있는지 체크
+            # 멤버에게 줄 수 있는 나의 reaction 개수 체크
             if user.my_reaction > 0:
-                crud.check_reaction(db, user, False)
+                crud.update_my_reaction(db, user, False)
                 crud.update_added_reaction(db=db, type=event.reaction, item_user=event.item_user,
                                            user=event.user, is_increase=True)
 
         elif event.type == REMOVED_REACTION:
             user = crud.get_user(db, event.user)
-            # 이모지 추가한걸 취소한 경우
+            # 멤버에게 전달한 reaction을 삭제하는 경우 (이미 하루 최대의 reaction 개수인 경우 더이상 추가하지 않음)
             if user.my_reaction < 5:
-                crud.check_reaction(db, user, True)
+                crud.update_my_reaction(db, user, True)
                 crud.update_added_reaction(db=db, type=event.reaction, item_user=event.item_user,
                                            user=event.user, is_increase=False)
 
