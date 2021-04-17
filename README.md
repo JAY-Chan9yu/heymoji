@@ -1,12 +1,15 @@
-# emoji_rank
+# 🤩🏆 emoji_rank 🏆👋
 ### 개발자의 한마디 👨🏻‍💻
-링크드인에서 <a href="https://medium.com/mathpresso/%EC%95%88%EB%85%95%ED%95%98%EC%84%B8%EC%9A%94-mathpresso%EC%9D%98-backend-web-%ED%8C%80%EC%97%90%EC%84%9C-backend-engineer%EB%A1%9C-%EC%9D%BC%ED%95%98%EA%B3%A0-%EC%9E%88%EB%8A%94-dan%EC%9E%85%EB%8B%88%EB%8B%A4-c7a0641333e8">매프 멤버들이 서로 토마토를 주는 이유는?<a/> 라는 글을 읽고, 슬랙 이모지(Emoji)로 멤버들에게 ``칭찬``이나 ``리스펙`` 할 수 있는 문화가 생긴다면 재밌기도 하고 고마움도 표현할 수 있을 것 같았습니다.<br/>
-그래서 이런 재미난 기능은 ``오픈소스``로 공개하면 좋을 것 같기도 했고, 개인적으로 ``FastAPI``를 한번 공부해볼 겸 해서 하루동안 삽질 하면서 만들어 봤습니다.😅 
+링크드인에서 <a href="https://medium.com/mathpresso/%EC%95%88%EB%85%95%ED%95%98%EC%84%B8%EC%9A%94-mathpresso%EC%9D%98-backend-web-%ED%8C%80%EC%97%90%EC%84%9C-backend-engineer%EB%A1%9C-%EC%9D%BC%ED%95%98%EA%B3%A0-%EC%9E%88%EB%8A%94-dan%EC%9E%85%EB%8B%88%EB%8B%A4-c7a0641333e8">매프 멤버들이 서로 토마토를 주는 이유는?<a/> 라는 글을 읽고, 슬랙 이모지(Emoji)로 멤버들에게 ``칭찬``이나 ``리스펙`` 할 수 있는 문화가 생긴다면 재밌기도 하고 고마움도 표현할 수 있을 것 같았습니다.<br/><br/>
+그래서 이런 재미난 기능은 ``오픈소스``로 공개하면 좋을 것 같다고 생각해서 토이 프로젝트로 만들어 보았습니다.<br/>
+(근데 Nodejs로 만들어진게 이미 있었네요 <a href="https://github.com/chralp/heyburrito">heyburrito</a>)<br/><br/>
+그래도 만들어 보면 재밌을 것 같아서 ``FastAPI``를 한번 공부해볼 겸 해서 이틀정도 삽질 하면서 만들었습니다.😅 <br/>
+(Django에 스며들어 있어서, 생각보다 어려웠네요) <br/><br/>
 좀 더 ``재미난 기능 + 완성도 있는 프로젝트``가 되기위해 유지보수는 지속적으로 할 예정입니다.💪<br/>
 FastAPI에 구조나 프로젝트 관련된 추가기능, 개선사항 ``PR``은 언제나 환영입니다! 
 <br/>
 
-## Server 🖥
+# Server 🖥
 ### 1. 개요 👋
 ``emoji_rank``는 ``Python 3.7.9``, ``FastAPI`` 로 개발되었습니다.<br/> 
 그 외 버전에서 패키지 및 동작에 대한 호환은 보장하지 않습니다. (근데 거의 다 될거에요 python 3 이상이면...아마두~😁 )<br/>
@@ -88,7 +91,7 @@ $PYTHON_PATH $SCRIPT_PATH
 ```
 <br/>
 
-## Slack Bot 🤖
+# Slack Bot 🤖
 <img src="https://user-images.githubusercontent.com/24591259/114943304-bf743a80-9e80-11eb-85ad-30cb26591ea3.png" width="400px"/>
 
 https://api.slack.com/apps에 접속하여 create app 버튼을 클릭한 후, <br/>
@@ -120,7 +123,7 @@ https://api.slack.com/apps에 접속하여 create app 버튼을 클릭한 후, <
 <br/> 마지막으로 app을 workspace에 **install** 하면 설정한 이벤트가 일어날때마다 `slack` 서버에서 `emoji_rank`서버로 api를 호출합니다.(WebHook)
 
 
-## 프론트 예제 📲
+# 프론트 예제 📲
 ![vllo 5](https://user-images.githubusercontent.com/24591259/115112136-0405f000-9fbf-11eb-8fcf-9527d0bc5188.GIF)
 
 간단하게 ``vue``프로젝트에서 `emoji_rank`의 api를 호출해 **User list**를 보여주도록 만들어 봤습니다.<br/>
