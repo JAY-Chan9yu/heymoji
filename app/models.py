@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, Date, ForeignKey
+from sqlalchemy import Column, Integer, String, ForeignKey
 
 from conf import database
 
@@ -17,9 +17,9 @@ class Reaction(database.Base):
     __tablename__ = "reactions"
 
     id = Column(Integer, primary_key=True, index=True)
-    year = Column(Integer, nullable=False)
-    month = Column(Integer, nullable=False)
+    year = Column(Integer, nullable=False) # 년
+    month = Column(Integer, nullable=False) # 월
     to_user = Column(Integer, ForeignKey("users.id")) # 리액션을 받은 유저
     from_user = Column(Integer, ForeignKey("users.id")) # 리액션을 보낸 유저
-    type = Column(String(50), nullable=True) # 리액션 타압 (이모지 종류)
+    type = Column(String(50), nullable=True) # 리액션 타입 (이모지 종류)
     count = Column(Integer, default=0) # 받은 개수

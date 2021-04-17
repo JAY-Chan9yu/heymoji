@@ -33,6 +33,7 @@ class EventDto:
         self.event_ts = event_data.get('event_ts')
         self.text = event_data.get('text')
 
+
 @dataclass
 class AddUserCommandDto:
     name: str
