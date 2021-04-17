@@ -1,6 +1,6 @@
-<center>
+<p align="center">
 <img src="https://user-images.githubusercontent.com/24591259/115119824-565a0780-9fe5-11eb-9d40-e150771b9b8b.png" width="200px"/>
-</center>
+</p>
 
 # 🤩🏆 emoji_rank 🏆👋
 ### 개발자의 한마디 👨🏻‍💻
