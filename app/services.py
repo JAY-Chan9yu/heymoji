@@ -33,27 +33,16 @@ class EventDto:
         self.event_ts = event_data.get('event_ts')
         self.text = event_data.get('text')
 
-
-@dataclass
-class CommandDto:
-    type: str
-    cmd: str
-
-    def __init__(self, _type: str, cmd: str):
-        self.type = _type
-        self.cmd = cmd
-
-
 @dataclass
 class AddUserCommandDto:
-    user_name: str
+    name: str
     slack_id: str
     avatar_url: str
 
-    def __init__(self, user_name: str, slack_id: str, avatar_url: str):
-        self.user_name = user_name
-        self.slack_id = slack_id
-        self.avatar_url = avatar_url
+    def __init__(self, name: str, slack_id: str, avatar_url: str):
+        self.name = name.strip('name=')
+        self.slack_id = slack_id.strip('slack_id=')
+        self.avatar_url = avatar_url.strip('avatar_url=')
 
 
 class SlackService(object):
@@ -102,30 +91,30 @@ class SlackService(object):
     def manage_app_mention(self, event: EventDto, db):
         """
         명령어를 분기 처리하는 함수
-        ex: ['<@ABCDFEFG>', 'create_user', '{{username}}-{{slack_id}}-{{AVATAR_URL}}']
+        ex: <@ABCDEFG> --create_user --name=JAY --slack_id=ABCDEFG --avatar_url=https://blablac.com/abcd
         """
-
-        mention_data = event.text.split(' ')
-        if len(mention_data) < 3:
+        event_command = event.text.split('--')
+        event_command.pop(0) # 첫번째 값은 user slack_id
+        if not event_command:
             return
 
-        cmd_dto = CommandDto(_type=mention_data[1], cmd=mention_data[2])
-        if cmd_dto.type == CREATE_USER_COMMAND:
-            self.add_user(cmd_dto.cmd, db)
+        _type = event_command.pop(0).strip(' ')
 
-    def add_user(self, cmd: str, db):
+        if _type == CREATE_USER_COMMAND:
+            if len(event_command) == 3:
+                add_user_cmd_dto = AddUserCommandDto(event_command[0], event_command[1], event_command[2])
+                self.add_user(add_user_cmd_dto, db)
+
+
+    def add_user(self, add_user_cmd_dto: AddUserCommandDto, db):
         """
         user 추가 명령어
         """
-        command = cmd.split('-')
-        if len(command) < 3:
-            return
-
-        add_cmd_dto = AddUserCommandDto(user_name=command[0], slack_id=command[1], avatar_url=command[2])
-        db_user = crud.get_user(db, item_user=add_cmd_dto.slack_id)
+        db_user = crud.get_user(db, item_user=add_user_cmd_dto.slack_id)
         if db_user:
             return
 
-        user = UserCreate(username=add_cmd_dto.user_name, slack_id=add_cmd_dto.slack_id,
-                          using_emoji_count=DAY_MAX_REACTION, get_emoji_count=0, avatar_url=add_cmd_dto.avatar_url)
+        user = UserCreate(username=add_user_cmd_dto.name, slack_id=add_user_cmd_dto.slack_id,
+                          using_emoji_count=DAY_MAX_REACTION, get_emoji_count=0,
+                          avatar_url=add_user_cmd_dto.avatar_url)
         crud.create_user(db=db, user=user)
