@@ -6,8 +6,7 @@ from operator import itemgetter
 from app import crud
 from app.schemas import UserCreate, SlackEventHook
 from app.models import User
-from app.settings import REACTION_LIST, DAY_MAX_REACTION
-from slacker import Slacker
+from app.settings import REACTION_LIST, DAY_MAX_REACTION, SLACKTOKEN
 
 # about reaction
 REMOVED_REACTION = 'reaction_removed'
@@ -170,7 +169,7 @@ class SlackService(object):
         return prise_list
 
     def send_prise_msg_to_slack(self, title, prise_list):
-        token = 'xoxb-2369151997507-2372357548274-0SyxqSUbFxjKiHtmh7rcU1bp'
+        token = SLACKTOKEN
 
         title = '칭찬봇아 ~~ ' + title
         blocks = [
