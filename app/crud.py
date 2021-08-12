@@ -7,6 +7,13 @@ from app import schemas
 from app.models import User, Reaction
 
 
+BEST_LOVE = ['heart']
+BEST_FUNNY = ['kkkk', '기쁨']
+BEST_HELP = ['pray', '기도']
+BEST_GOOD = ['+1', 'wow', 'wonderfulk', '천재_개발자']
+BEST_BAD = ['eye_shaking']
+
+
 def get_user(db: Session, item_user: str):
     return db.query(User).filter(User.slack_id == item_user).first()
 
@@ -65,7 +72,8 @@ def update_added_reaction(db: Session, type: str, item_user: str, user: str, is_
     now_date = datetime.now().date()
     reaction = db.query(Reaction).filter(
         Reaction.year == now_date.year, Reaction.month == now_date.month,
-        Reaction.from_user == from_user.id, Reaction.to_user == to_user.id
+        Reaction.from_user == from_user.id, Reaction.to_user == to_user.id,
+        Reaction.type == type
     ).first()
 
     """
@@ -99,3 +107,35 @@ def update_my_reaction(db: Session, user: User, is_increase: bool):
     db.add(user)
     db.commit()
     db.refresh(user)
+
+
+def get_member_reaction_count(db: Session, user: User, year: int, month: int):
+    """
+        멤버가 받은 reaction을 현재 prise type별로 가지고 오는 함수
+        {user_id : '123123', love : 3, funny : 5, help : 5, good : 10, bad : 5}
+    """
+
+    # 리액션별로 count
+    reaction_list = db.query(Reaction).filter(Reaction.to_user == user.id, Reaction.year == year, Reaction.month == month)
+
+    result = dict()
+    result['username'] = user.username
+    result['love'] = 0
+    result['funny'] = 0
+    result['help'] = 0
+    result['good'] = 0
+    result['bad'] = 0
+
+    for reaction in reaction_list:
+        if reaction.type in BEST_LOVE:
+            result['love'] += 1
+        elif reaction.type in BEST_FUNNY:
+            result['funny'] += 1
+        elif reaction.type in BEST_HELP:
+            result['help'] += 1
+        elif reaction.type in BEST_GOOD:
+            result['help'] += 1
+        elif reaction.type in BEST_BAD:
+            result['bad'] += 1
+
+    return result

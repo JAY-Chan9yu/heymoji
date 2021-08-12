@@ -1,9 +1,13 @@
+import re
+import requests
+import json
 from dataclasses import dataclass
-
+from operator import itemgetter
 from app import crud
 from app.schemas import UserCreate, SlackEventHook
-
+from app.models import User
 from app.settings import REACTION_LIST, DAY_MAX_REACTION
+from slacker import Slacker
 
 # about reaction
 REMOVED_REACTION = 'reaction_removed'
@@ -12,7 +16,7 @@ APP_MENTION_REACTION = 'app_mention'
 
 # about command
 CREATE_USER_COMMAND = 'create_user'
-
+SHOW_THIS_MONTH_PRISE = '칭찬을 보여줘'
 
 @dataclass
 class EventDto:
@@ -93,8 +97,13 @@ class SlackService(object):
         """
         명령어를 분기 처리하는 함수
         ex: <@ABCDEFG> --create_user --name=JAY --slack_id=ABCDEFG --avatar_url=https://blablac.com/abcd
+
+        오늘의 칭찬 리스트를 return
+        ex: <@ABCDEFG> -- 오늘의 칭찬을 보여줘 --
         """
+
         event_command = event.text.split('--')
+        print('event_commnet', event_command)
         event_command.pop(0) # 첫번째 값은 user slack_id
         if not event_command:
             return
@@ -105,6 +114,21 @@ class SlackService(object):
             if len(event_command) == 3:
                 add_user_cmd_dto = AddUserCommandDto(event_command[0], event_command[1], event_command[2])
                 self.add_user(add_user_cmd_dto, db)
+
+        elif SHOW_THIS_MONTH_PRISE in _type:
+            # 2021년 8월의 칭찬을 보여줘
+            year = re.sub(r'[^0-9]', '', _type.split(' ')[0])
+            month = re.sub(r'[^0-9]', '', _type.split(' ')[1])
+
+            # 숫자로 변환 try 해보고 안되면 return
+            try:
+                year = int(year)
+                month = int(month)
+                prise_list = self.show_this_month_prise(year, month, db)
+                self.send_prise_msg_to_slack(_type, prise_list)
+            except:
+                return
+
 
 
     def add_user(self, add_user_cmd_dto: AddUserCommandDto, db):
@@ -119,3 +143,117 @@ class SlackService(object):
                           using_emoji_count=DAY_MAX_REACTION, get_emoji_count=0,
                           avatar_url=add_user_cmd_dto.avatar_url)
         crud.create_user(db=db, user=user)
+
+
+    def show_this_month_prise(self, year: int, month: int, db):
+        """
+            이번 달 최고 멤버들 뽑기
+            member_reaction_list = [{'username' : '김병욱', 'love' : 3, 'funny' : 5, 'help' : 5, 'good' : 10, 'bad' : 5},{'username' : '김병욱', 'love' : 3, 'funny' : 5, 'help' : 5, 'good' : 10, 'bad' : 5}]
+        """
+        user_list = db.query(User).all()
+
+        member_reaction_list = []
+        for user in user_list:
+            get_member_reaction = crud.get_member_reaction_count(db, user, year, month)
+            member_reaction_list.append(get_member_reaction)
+
+
+        #각각의 best member 뽑기
+        best_love = sorted(member_reaction_list, key=itemgetter('love'))[-1]['username']
+        best_funny = sorted(member_reaction_list, key=itemgetter('funny'))[-1]['username']
+        best_help = sorted(member_reaction_list, key=itemgetter('help'))[-1]['username']
+        best_good = sorted(member_reaction_list, key=itemgetter('good'))[-1]['username']
+        best_bad = sorted(member_reaction_list, key=itemgetter('bad'))[-1]['username']
+
+        prise_list = dict(best_love=best_love, best_funny=best_funny, best_help=best_help, best_good=best_good, best_bad=best_bad)
+
+        return prise_list
+
+    def send_prise_msg_to_slack(self, title, prise_list):
+        token = 'xoxb-2369151997507-2372357548274-0SyxqSUbFxjKiHtmh7rcU1bp'
+
+        title = '칭찬봇아 ~~ ' + title
+        blocks = [
+            {
+                "type": "section",
+                "text": {
+                    "type": "mrkdwn",
+                    "text": "*{}*".format(title)
+                }
+            },
+            {
+                "type": "section",
+                "block_id": "section567",
+                "text": {
+                    "type": "mrkdwn",
+                    "text": "이번 달 가장 많은 사랑을 받은 크루는?! {} :heart: ".format(prise_list.get('best_love'))
+                },
+                "accessory": {
+                    "type": "image",
+                    "image_url": "https://i.pinimg.com/originals/bf/88/4c/bf884cb9b29803db712b77f1bce4f462.jpg",
+                    "alt_text": "Haunted hotel image"
+                }
+            },
+            {
+                "type": "section",
+                "block_id": "section568",
+                "text": {
+                    "type": "mrkdwn",
+                    "text": "이번 달 개그맨 보다 더 많은 웃음을 준 크루는?! {} :kkkk: :기쁨: ".format(prise_list.get('best_funny'))
+                },
+                "accessory": {
+                    "type": "image",
+                    "image_url": "https://t1.daumcdn.net/cfile/tistory/99E10D3F5ADC079602",
+                    "alt_text": "Haunted hotel image"
+                }
+            },
+            {
+                "type": "section",
+                "block_id": "section569",
+                "text": {
+                    "type": "mrkdwn",
+                    "text": "이번 달 많은 크루를 도와준 천사 크루는?! {} :pray: :기도: ".format(prise_list.get('best_help'))
+                },
+                "accessory": {
+                    "type": "image",
+                    "image_url": "http://images.goodoc.kr/images/article/2018/08/20/428733/43bedd6ad60a_3bbaf99a964d.png",
+                    "alt_text": "Haunted hotel image"
+                }
+            },
+            {
+                "type": "section",
+                "block_id": "section570",
+                "text": {
+                    "type": "mrkdwn",
+                    "text": "이번 달 가장 많은 이슈를 처리해 준 크루는?! {} :+1: :wow: :wonderfulk: :천재_개발자:".format(prise_list.get('best_good'))
+                },
+                "accessory": {
+                    "type": "image",
+                    "image_url": "https://cdn.clien.net/web/api/file/F03/11193449/82140da86eecc4.jpg?w=500&h=1000",
+                    "alt_text": "Haunted hotel image"
+                }
+            },
+            {
+                "type": "section",
+                "block_id": "section571",
+                "text": {
+                    "type": "mrkdwn",
+                    "text": "이번 달 가장 많은 크루를 당황시킨 크루는?! {} :eye_shaking: ".format(prise_list.get('best_bad'))
+                },
+                "accessory": {
+                    "type": "image",
+                    "image_url": "https://d2u3dcdbebyaiu.cloudfront.net/uploads/atch_img/693/6ebb2cf8ed8a3f6cdebe2f6aedc640e6.jpeg",
+                    "alt_text": "Haunted hotel image"
+                }
+            }
+        ]
+
+        self.post_message(token, "#개발_다노샵_서버_생산성", blocks=blocks)
+
+
+    def post_message(self, token, channel, blocks):
+
+        response = requests.post("https://slack.com/api/chat.postMessage",
+            headers={"Authorization": "Bearer "+token, "Content-Type":"application/json"},
+            data=json.dumps({"channel": channel, "blocks": blocks})
+        )
