@@ -1,16 +1,21 @@
-import os
-
-from pydantic import BaseSettings
+from pydantic import BaseSettings, Field
 
 
-# 로컬에 동일한 이름의 환경변수가 적용되어있으면, 그걸로 덮어지게됨 (printenv 로 확인 필요)
 class Settings(BaseSettings):
-    HOST: str
-    PORT: int
-    DATABASE: str
-    USERNAME: str
-    PASSWORD: str
+    HOST: str = Field(env="HOST", default="127.0.0.1")
+    PORT: int = Field(env="PORT", default="3306")
+    DATABASE: str = Field(env="DATABASE", default="emojirank_db")
+    USERNAME: str = Field(env="USERNAME")
+    PASSWORD: str = Field(env="PASSWORD")
+
+    DAY_MAX_REACTION: int = Field(env="DAY_MAX_REACTION", default=1000)
+    REACTION_LIST: list = Field(env="REACTION_LIST", default=['heart'])
+    SLACK_TOKEN: str = Field(env="SLACK_TOKEN")
+    SLACK_CHANNEL: str = Field(env="SLACK_CHANNEL")
 
     class Config:
-        env_file = os.path.expanduser('~/.env')
+        env_file = ".env"
         env_file_encoding = 'utf-8'
+
+
+settings = Settings(_env_file=f'./.env')

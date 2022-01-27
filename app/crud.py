@@ -5,7 +5,8 @@ from sqlalchemy.orm import Session, joinedload
 
 from app import schemas
 from app.models import User, Reaction
-from schemas import UserReceivedReactions, ReceivedEmojiInfo, ReceivedReactionUser
+
+from app.schemas import UserReceivedReactions, ReceivedEmojiInfo, ReceivedReactionUser
 
 BEST_LOVE = ['heart']
 BEST_FUNNY = ['kkkk', '기쁨']

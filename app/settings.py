@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from conf import config
 
 
 ##################################################################
@@ -6,17 +7,17 @@ from dataclasses import dataclass
 ##################################################################
 @dataclass
 class DataBaseSettings:
-    HOST = 'HOST'
-    PORT = 3306
-    DATABASE = 'DATABASE'
-    USERNAME = 'USERNAME'
-    PASSWORD = 'PASSWORD'
+    HOST = config.settings.HOST
+    PORT = config.settings.PORT
+    DATABASE = config.settings.DATABASE
+    USERNAME = config.settings.USERNAME
+    PASSWORD = config.settings.PASSWORD
+
 
 ##################################################################
 #                       Reaction Setting
 ##################################################################
-DAY_MAX_REACTION = 1000  # 하루 최대 사용할 수 있는 reaction 개수
-# reaction type(emoji name), 다른 Emoji 입력도 허용하려면 리스트에 추가하면 된다.
-REACTION_LIST = ['pray', 'heart', 'eye_shaking', '+1', 'wow', 'wonderfulk', '천재_개발자', '기도', '기쁨', 'kkkk']
-SLACKTOKEN = ''
-SLACK_CHANNEL = ''
+DAY_MAX_REACTION = config.settings.DAY_MAX_REACTION  # 하루 최대 사용할 수 있는 reaction 개수
+REACTION_LIST = config.settings.REACTION_LIST  # 리액션 허용 이모지 type(name)
+SLACK_TOKEN = config.settings.SLACK_TOKEN
+SLACK_CHANNEL = config.settings.SLACK_CHANNEL

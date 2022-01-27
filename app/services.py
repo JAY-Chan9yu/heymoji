@@ -1,12 +1,13 @@
 import re
 import requests
 import json
+
 from dataclasses import dataclass
 from operator import itemgetter
 from app import crud
 from app.schemas import UserCreate, SlackEventHook
 from app.models import User
-from app.settings import REACTION_LIST, DAY_MAX_REACTION, SLACKTOKEN, SLACK_CHANNEL
+from app.settings import REACTION_LIST, DAY_MAX_REACTION, SLACK_CHANNEL, SLACK_TOKEN
 
 # about reaction
 REMOVED_REACTION = 'reaction_removed'
@@ -172,7 +173,7 @@ class SlackService:
 
     @classmethod
     def send_prise_msg_to_slack(cls, title, prise_list):
-        token = SLACKTOKEN
+        token = SLACK_TOKEN
 
         title = '칭찬봇아 ~~ ' + title
         blocks = [
