@@ -4,12 +4,16 @@ import json
 
 from dataclasses import dataclass
 from operator import itemgetter
-from app import crud
+
+from app.models.user_model import User
 from app.schemas import UserCreate, SlackEventHook
-from app.models import User
-from app.settings import REACTION_LIST, DAY_MAX_REACTION, SLACK_CHANNEL, SLACK_TOKEN
+
 
 # about reaction
+from app.services.reaction_service import ReactionService
+from app.services.user_service import UserService
+from conf import settings
+
 REMOVED_REACTION = 'reaction_removed'
 ADDED_REACTION = 'reaction_added'
 APP_MENTION_REACTION = 'app_mention'
@@ -29,15 +33,6 @@ class EventDto:
     event_ts: str
     text: str  # app mention text
 
-    def __init__(self, event_data):
-        self.type = event_data.get('type')
-        self.user = event_data.get('user')
-        self.item = event_data.get('item')
-        self.reaction = event_data.get('reaction')
-        self.item_user = event_data.get('item_user')
-        self.event_ts = event_data.get('event_ts')
-        self.text = event_data.get('text')
-
 
 @dataclass
 class AddUserCommandDto:
@@ -45,16 +40,13 @@ class AddUserCommandDto:
     slack_id: str
     avatar_url: str
 
-    def __init__(self, name: str, slack_id: str, avatar_url: str):
-        self.name = name.strip('name=')
-        self.slack_id = slack_id.strip('slack_id=')
-        self.avatar_url = avatar_url.strip('avatar_url=')
-
 
 class SlackService:
+    _user_service = UserService
+    _reaction_service = ReactionService
 
     @classmethod
-    def check_challenge(cls, event: SlackEventHook, db) -> dict:
+    def check_challenge(cls, event: SlackEventHook) -> dict:
         # slack Enable Events
         if 'challenge' in event:
             return {"challenge": event['challenge']}
@@ -66,38 +58,46 @@ class SlackService:
             if event_dto.type in [ADDED_REACTION, REMOVED_REACTION]:
                 # 다른 사람에게만 이모지 줄 수 있음
                 if event_dto.item_user != event_dto.user:
-                    cls.assign_emoji(event_dto, db)
+                    cls.assign_emoji(event_dto)
             elif event_dto.type == APP_MENTION_REACTION:
-                cls.manage_app_mention(event_dto, db)
+                cls.manage_app_mention(event_dto)
 
         return {}
 
     @classmethod
-    def assign_emoji(cls, event: EventDto, db):
+    def assign_emoji(cls, event: EventDto):
         """
         reaction process
         """
-        if event.reaction not in REACTION_LIST:
+        if event.reaction not in settings.config.REACTION_LIST:
             return
 
         if event.type == ADDED_REACTION:
-            user = crud.get_user(db, event.user)
+            user = cls._user_service.get_user(event.user)
             # 멤버에게 줄 수 있는 나의 reaction 개수 체크
             if user.my_reaction > 0:
-                crud.update_my_reaction(db, user, False)
-                crud.update_added_reaction(db=db, type=event.reaction, item_user=event.item_user,
-                                           user=event.user, is_increase=True)
+                cls._reaction_service.update_my_reaction(user, False)
+                cls._reaction_service.update_added_reaction(
+                    reaction_type=event.reaction,
+                    item_user=event.item_user,
+                    user=event.user,
+                    is_increase=True
+                )
 
         elif event.type == REMOVED_REACTION:
-            user = crud.get_user(db, event.user)
-            # 멤버에게 전달한 reaction을 삭제하는 경우 (이미 하루 최대의 reaction 개수인 경우 더이상 추가하지 않음)
-            if user.my_reaction < DAY_MAX_REACTION:
-                crud.update_my_reaction(db, user, True)
-                crud.update_added_reaction(db=db, type=event.reaction, item_user=event.item_user,
-                                           user=event.user, is_increase=False)
+            user = cls._user_service.get_user(event.user)
+            # 멤버에게 전달한 reaction 을 삭제하는 경우 (이미 하루 최대의 reaction 개수인 경우 더이상 추가하지 않음)
+            if user.my_reaction < settings.config.DAY_MAX_REACTION:
+                cls._reaction_service.update_my_reaction(user, True)
+                cls._reaction_service.update_added_reaction(
+                    reaction_type=event.reaction,
+                    item_user=event.item_user,
+                    user=event.user,
+                    is_increase=False
+                )
 
     @classmethod
-    def manage_app_mention(cls, event: EventDto, db):
+    def manage_app_mention(cls, event: EventDto):
         """
         명령어를 분기 처리하는 함수
         ex: <@ABCDEFG> --create_user --name=JAY --slack_id=ABCDEFG --avatar_url=https://blablac.com/abcd
@@ -117,7 +117,7 @@ class SlackService:
         if _type == CREATE_USER_COMMAND:
             if len(event_command) == 3:
                 add_user_cmd_dto = AddUserCommandDto(event_command[0], event_command[1], event_command[2])
-                cls.add_user(add_user_cmd_dto, db)
+                cls.add_user(add_user_cmd_dto)
 
         elif SHOW_THIS_MONTH_PRISE in _type:
             # 2021년 8월의 칭찬을 보여줘
@@ -128,24 +128,27 @@ class SlackService:
             try:
                 year = int(year)
                 month = int(month)
-                prise_list = cls.show_this_month_prise(year, month, db)
+                prise_list = cls.show_this_month_prise(year, month)
                 cls.send_prise_msg_to_slack(_type, prise_list)
             except:
                 return
 
     @classmethod
-    def add_user(cls, add_user_cmd_dto: AddUserCommandDto, db):
+    def add_user(cls, add_user_cmd_dto: AddUserCommandDto):
         """
         user 추가 명령어
         """
-        db_user = crud.get_user(db, item_user=add_user_cmd_dto.slack_id)
+        db_user = cls._user_service.get_user(slack_id=add_user_cmd_dto.slack_id)
         if db_user:
             return
 
-        user = UserCreate(username=add_user_cmd_dto.name, slack_id=add_user_cmd_dto.slack_id,
-                          using_emoji_count=DAY_MAX_REACTION, get_emoji_count=0,
-                          avatar_url=add_user_cmd_dto.avatar_url)
-        crud.create_user(db=db, user=user)
+        user = UserCreate(
+            username=add_user_cmd_dto.name,
+            slack_id=add_user_cmd_dto.slack_id,
+            using_emoji_count=settings.config.DAY_MAX_REACTION, get_emoji_count=0,
+            avatar_url=add_user_cmd_dto.avatar_url
+        )
+        cls._user_service.create_user(user=user)
 
     @classmethod
     def show_this_month_prise(cls, year: int, month: int, db):
@@ -157,7 +160,7 @@ class SlackService:
 
         member_reaction_list = []
         for user in user_list:
-            get_member_reaction = crud.get_member_reaction_count(db, user, year, month)
+            get_member_reaction = cls._reaction_service.get_member_reaction_count(user, year, month)
             member_reaction_list.append(get_member_reaction)
 
         # 각각의 best member 뽑기
@@ -167,13 +170,17 @@ class SlackService:
         best_good = sorted(member_reaction_list, key=itemgetter('good'))[-1]['username']
         best_bad = sorted(member_reaction_list, key=itemgetter('bad'))[-1]['username']
 
-        prise_list = dict(best_love=best_love, best_funny=best_funny, best_help=best_help, best_good=best_good, best_bad=best_bad)
+        prise_list = dict(best_love=best_love,
+                          best_funny=best_funny,
+                          best_help=best_help,
+                          best_good=best_good,
+                          best_bad=best_bad)
 
         return prise_list
 
     @classmethod
     def send_prise_msg_to_slack(cls, title, prise_list):
-        token = SLACK_TOKEN
+        token = settings.config.SLACK_TOKEN
 
         title = '칭찬봇아 ~~ ' + title
         blocks = [
@@ -251,7 +258,7 @@ class SlackService:
             }
         ]
 
-        cls.post_message(token, SLACK_CHANNEL, blocks=blocks)
+        cls.post_message(token, settings.config.SLACK_CHANNEL, blocks=blocks)
 
     @classmethod
     def post_message(cls, token, channel, blocks):

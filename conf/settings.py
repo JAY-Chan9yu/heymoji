@@ -1,7 +1,7 @@
 from pydantic import BaseSettings, Field
 
 
-class Settings(BaseSettings):
+class BaseConfig(BaseSettings):
     HOST: str = Field(env="HOST", default="127.0.0.1")
     PORT: int = Field(env="PORT", default="3306")
     DATABASE: str = Field(env="DATABASE", default="emojirank_db")
@@ -18,4 +18,4 @@ class Settings(BaseSettings):
         env_file_encoding = 'utf-8'
 
 
-settings = Settings(_env_file=f'./.env')
+config = BaseConfig(_env_file=f'./.env')
