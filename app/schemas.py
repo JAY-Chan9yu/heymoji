@@ -1,3 +1,5 @@
+from typing import List
+
 from pydantic import BaseModel
 
 
@@ -10,6 +12,14 @@ class User(BaseModel):
 
     class Config:
         orm_mode = True
+
+
+class ReceivedReactionUser(BaseModel):
+    id: int
+    avatar_url: str
+    username: str
+    my_reaction: int
+    received_reaction: int
 
 
 class UserCreate(BaseModel):
@@ -48,7 +58,16 @@ class ReactionCreate(BaseModel):
     type: str
 
 
-# ETC
+class ReceivedEmojiInfo(BaseModel):
+    type: str
+    count: int
+
+
+class UserReceivedReactions(BaseModel):
+    username: str
+    emoji: List[ReceivedEmojiInfo]
+
+
 class SlackEventHook(BaseModel):
     token: str
     team_id: str
