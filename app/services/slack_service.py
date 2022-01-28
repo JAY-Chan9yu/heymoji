@@ -5,11 +5,10 @@ import json
 from dataclasses import dataclass
 from operator import itemgetter
 
-from app.models.user_model import User
-from app.schemas import UserCreate, SlackEventHook
-
 
 # about reaction
+from app.domain.schemas.slack_schema import SlackEventHook
+from app.domain.schemas.user_schema import User
 from app.services.reaction_service import ReactionService
 from app.services.user_service import UserService
 from conf import settings
@@ -142,7 +141,7 @@ class SlackService:
         if db_user:
             return
 
-        user = UserCreate(
+        user = User(
             username=add_user_cmd_dto.name,
             slack_id=add_user_cmd_dto.slack_id,
             using_emoji_count=settings.config.DAY_MAX_REACTION, get_emoji_count=0,

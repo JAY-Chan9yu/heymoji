@@ -2,11 +2,12 @@ from datetime import datetime
 
 from sqlalchemy.orm import Session, joinedload
 
-from app.models.reaction_model import Reaction
-from app.models.user_model import User
+from app.domain.models.reaction_model import ReactionModel
+from app.domain.models.user_model import UserModel
+from app.domain.schemas.reaction_schema import ReceivedEmojiInfo
+from app.domain.schemas.user_schema import UserReceivedReactions, User
 from app.repositories.base_repository import BaseRepository
 
-from app.schemas import UserReceivedReactions, ReceivedEmojiInfo
 
 BEST_LOVE = ['heart']
 BEST_FUNNY = ['kkkk', '기쁨']
@@ -22,17 +23,17 @@ class ReactionRepository(BaseRepository):
 
     def get_my_reaction(self, slack_id: str, year: int, month: int):
     
-        reactions = self.session.query(Reaction).options(
-            joinedload(Reaction.from_user),
-            joinedload(Reaction.to_user),
+        reactions = self.session.query(ReactionModel).options(
+            joinedload(ReactionModel.from_user),
+            joinedload(ReactionModel.to_user),
         ).filter(
-            Reaction.to_user.has(slack_id=slack_id),
+            ReactionModel.to_user.has(slack_id=slack_id),
         )
     
         if year:
-            reactions = reactions.filter(Reaction.year == year)
+            reactions = reactions.filter(ReactionModel.year == year)
         if month:
-            reactions = reactions.filter(Reaction.month == month)
+            reactions = reactions.filter(ReactionModel.month == month)
     
         def change_str_to_emoji(emoji_type: str):
             if emoji_type in BEST_LOVE:
@@ -58,17 +59,17 @@ class ReactionRepository(BaseRepository):
         return reaction_data
     
     def get_reactions(self, user_id: int, year: int, month: int):
-        reactions = self.session.query(Reaction).options(
-            joinedload(Reaction.from_user),
-            joinedload(Reaction.to_user),
+        reactions = self.session.query(ReactionModel).options(
+            joinedload(ReactionModel.from_user),
+            joinedload(ReactionModel.to_user),
         ).filter(
-            Reaction.to_user_id == user_id,
+            ReactionModel.to_user_id == user_id,
         )
     
         if year:
-            reactions = reactions.filter(Reaction.year == year)
+            reactions = reactions.filter(ReactionModel.year == year)
         if month:
-            reactions = reactions.filter(Reaction.month == month)
+            reactions = reactions.filter(ReactionModel.month == month)
     
         reaction_data = {}
         for reaction in reactions:
@@ -91,17 +92,17 @@ class ReactionRepository(BaseRepository):
         :param user: 리액션을 한 유저
         :param is_increase: True: Added, False: Removed
         """
-        from_user = self.session.query(User).filter(User.slack_id == user).one_or_none()
-        to_user = self.session.query(User).filter(User.slack_id == item_user).one_or_none()
+        from_user = self.session.query(UserModel).filter(UserModel.slack_id == user).one_or_none()
+        to_user = self.session.query(UserModel).filter(UserModel.slack_id == item_user).one_or_none()
     
         if to_user is None or from_user is None:
             return
     
         now_date = datetime.now().date()
-        reaction = self.session.query(Reaction).filter(
-            Reaction.year == now_date.year, Reaction.month == now_date.month,
-            Reaction.from_user_id == from_user.id, Reaction.to_user_id == to_user.id,
-            Reaction.type == type
+        reaction = self.session.query(ReactionModel).filter(
+            ReactionModel.year == now_date.year, ReactionModel.month == now_date.month,
+            ReactionModel.from_user_id == from_user.id, ReactionModel.to_user_id == to_user.id,
+            ReactionModel.type == type
         ).first()
     
         """
@@ -114,7 +115,7 @@ class ReactionRepository(BaseRepository):
                 return
             reaction.count += 1 if is_increase else -1
         elif is_increase:
-            reaction = Reaction(
+            reaction = ReactionModel(
                 year=now_date.year,
                 month=now_date.month,
                 type=type,
@@ -147,10 +148,10 @@ class ReactionRepository(BaseRepository):
         """
     
         # 리액션별로 count
-        reaction_list = self.session.query(Reaction).filter(
-            Reaction.to_user_id == user.id,
-            Reaction.year == year,
-            Reaction.month == month
+        reaction_list = self.session.query(ReactionModel).filter(
+            ReactionModel.to_user_id == user.id,
+            ReactionModel.year == year,
+            ReactionModel.month == month
         )
     
         result = {

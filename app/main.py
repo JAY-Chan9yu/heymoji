@@ -4,8 +4,8 @@ from fastapi import FastAPI, HTTPException
 from starlette.middleware.cors import CORSMiddleware
 from starlette.requests import Request
 
-from app import schemas
-
+from app.domain.schemas.slack_schema import SlackEventHook
+from app.domain.schemas.user_schema import UserReceivedReactions, User, UserDetailInfo
 from app.services.reaction_service import ReactionService
 from app.services.slack_service import SlackService
 from app.services.user_service import UserService
@@ -24,15 +24,15 @@ app.add_middleware(
 
 
 @app.post(path="/slack", name='슬랙 웹훅 api')
-async def slack(request: Request):
-    request_event = await request.json()
-    response = SlackService.check_challenge(request_event)
+async def slack(event: SlackEventHook):
+    # request_event = await request.json()
+    response = SlackService.check_challenge(event)
     return response
 
 
 @app.post("/users/", name="유저 생성 api", description="""
-""", response_model=schemas.User)
-async def create_user(user: schemas.UserCreate):
+""", response_model=UserDetailInfo)
+async def create_user(user: User):
     db_user = UserService.get_user(slack_id=user.slack_id)
     if db_user:
         raise HTTPException(status_code=400, detail="already registered")
@@ -41,7 +41,7 @@ async def create_user(user: schemas.UserCreate):
 
 @app.get("/users/", name="전체 유저 리스트 반환 api", description="""
 유저리스트를 반환합니다. 받은 reaction 이 높은 순으로 정렬합니다.
-""", response_model=List[schemas.ReceivedReactionUser])
+""", response_model=List[UserDetailInfo])
 async def get_user(year: Optional[int] = None, month: Optional[int] = None):
     users = UserService.get_user_list(year=year, month=month)
     if not users:
@@ -51,7 +51,7 @@ async def get_user(year: Optional[int] = None, month: Optional[int] = None):
 
 @app.get("/users/{user_id}/reactions/", name="유저 리액션 반환 api", description="""
 특정 유저가 받은 reaction 과 전달한 유저정보를 반환합니다.
-""", response_model=List[schemas.UserReceivedReactions])
+""", response_model=List[UserReceivedReactions])
 async def get_reactions(
     user_id: int = 0,
     year: Optional[int] = None,
