@@ -4,7 +4,6 @@ def get_best_user_format(title: str, best_users: dict) -> list:
     return [
         {
             "type": "section",
-
             "text": {
                 "type": "mrkdwn",
                 "text": "*{}*".format(title)
@@ -76,4 +75,21 @@ def get_best_user_format(title: str, best_users: dict) -> list:
                 "alt_text": "Haunted hotel image"
             }
         }
+    ]
+
+
+def get_help_msg() -> list:
+    return [
+        {
+            "type": "section",
+            "text": {
+                "type": "mrkdwn",
+                "text": "[멤버 등록]\n"
+                        "ex: <@슬랙봇> --create_user --name=이름 --slack_id=슬랙ID --avatar_url=이미지URL --department=부서\n\n"
+                        "[멤버 정보 업데이트]\n"
+                        "ex: <@슬랙봇> --update_user --slack_id=슬랙ID --avatar_url=이미지URL\n\n"
+                        "[이번달 베스트 멤버 리스트 추출]\n"
+                        "ex: <@슬랙봇> --show_best_member --year=2022 --month=1",
+            }
+        },
     ]

@@ -24,5 +24,9 @@ class UserService:
         return await cls._user_repository().create_user(user)
 
     @classmethod
+    async def update_user(cls, user: User):
+        return await cls._user_repository().update_user(user)
+
+    @classmethod
     async def update_my_reaction(cls, user: User, is_increase: bool):
         return await cls._user_repository().update_my_reaction(user, is_increase)

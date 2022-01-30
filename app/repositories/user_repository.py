@@ -63,6 +63,10 @@ class UserRepository(BaseRepository):
         await self.session.commit()
         return user
 
+    async def update_user(self, user: User):
+        await self.session.execute(update(UserModel).filter(UserModel.id == user.id).values(user.__dict__))
+        await self.session.commit()
+
     async def update_my_reaction(self, user: User, is_increase: bool):
         """내가 가지고 있는 reaction count 업데이트"""
         user.my_reaction += 1 if is_increase else -1

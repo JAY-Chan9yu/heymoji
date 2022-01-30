@@ -9,12 +9,15 @@ from app.domain.schemas.slack_schema import SlackEventHook, SlackChallengeHook, 
 from app.domain.schemas.user_schema import User
 from app.services.reaction_service import ReactionService
 from app.services.user_service import UserService
-from app.utils.slack_message_format import get_best_user_format
+from app.utils.slack_message_format import get_best_user_format, get_help_msg
+from app.utils.utils import mapping_slack_command_to_dict
 from conf import settings
 
 
 class CommandType(Enum):
+    HELP_COMMAND = 'help'
     CREATE_USER_COMMAND = 'create_user'
+    UPDATE_USER_COMMAND = 'update_user'
     SHOW_THIS_MONTH_PRISE = 'show_best_member'
 
 
@@ -51,29 +54,50 @@ class SlackService:
             return
 
         _type = event_command.pop(0).strip('--')
+        mapped_attr = mapping_slack_command_to_dict(event_command)
+
+        if _type == CommandType.HELP_COMMAND.value:
+            """
+            ex: <@슬랙봇> --help
+            """
+            cls.send_help_command()
+
         if _type == CommandType.CREATE_USER_COMMAND.value:
             """
-            명령어를 분기 처리하는 함수
             ex: <@슬랙봇> --create_user --name=JAY --slack_id=a1b1c1d1 --avatar_url=https://blablac.com/abcd
             """
-            # todo: 맨션 맵핑하는 함수 만들기
-            if len(event_command) >= 2:
-                await cls.add_user(
-                    username=event_command[0].split('=')[1],
-                    slack_id=event_command[1].split('=')[1],
-                    avatar_url=event_command[2].split('=')[1] if len(event_command) == 3 else ''
-                )
+            if not mapped_attr.get('slack_id'):
+                return
+
+            await cls.add_user(
+                username=mapped_attr.get('name'),
+                slack_id=mapped_attr.get('slack_id'),
+                avatar_url=mapped_attr.get('avatar_url')
+            )
+
+        elif _type == CommandType.UPDATE_USER_COMMAND.value:
+            """
+            ex: <@슬랙봇> --update_user --slack_id=a1b1c1d1 --avatar_url=https://blablac.com/abcd
+            """
+            if not mapped_attr.get('slack_id'):
+                return
+
+            await cls.update_user(
+                username=mapped_attr.get('name'),
+                slack_id=mapped_attr.get('slack_id'),
+                avatar_url=mapped_attr.get('avatar_url')
+            )
 
         elif _type == CommandType.SHOW_THIS_MONTH_PRISE.value:
             """
             이번달 베스트 멤버 리스트 추출
-            ex: <@슬랙봇> --show_beet_member --year=12 --month=1
+            ex: <@슬랙봇> --show_best_member --year=12 --month=1
             """
-            year = event_command[0].split('=')[1]
-            month = event_command[1].split('=')[1]
+            year = int(mapped_attr.get('year'))
+            month = int(mapped_attr.get('month'))
 
             try:
-                best_users = await cls.get_this_month_best_user(int(year), int(month))
+                best_users = await cls.get_this_month_best_user(year, month)
                 cls.send_best_user_list_to_slack(f"{year}년 {month}월 베스트 멤버", best_users)
             except Exception as err:
                 print(err)
@@ -92,6 +116,19 @@ class SlackService:
             avatar_url=avatar_url
         )
         await cls._user_service.create_user(user=user)
+
+    @classmethod
+    async def update_user(cls, slack_id: str, username: Optional[str], avatar_url: Optional[str]):
+        user = await cls._user_service.get_user(slack_id=slack_id)
+        if not user:
+            return
+
+        if username:
+            user.username = username
+        if avatar_url:
+            user.avatar_url = avatar_url
+
+        await cls._user_service.update_user(user=user)
 
     @classmethod
     async def get_this_month_best_user(cls, year: int, month: int):
@@ -124,9 +161,17 @@ class SlackService:
         return best_users
 
     @classmethod
+    def send_help_command(cls):
+        cls.send_slack_msg(get_help_msg())
+
+    @classmethod
     def send_best_user_list_to_slack(cls, title: str, best_users: dict):
+        cls.send_slack_msg(get_best_user_format(title, best_users))
+
+    @staticmethod
+    def send_slack_msg(blocks: list):
         requests.post(
             "https://slack.com/api/chat.postMessage",
             headers={"Authorization": "Bearer " + settings.config.SLACK_TOKEN, "Content-Type": "application/json"},
-            data=json.dumps({"channel": settings.config.SLACK_CHANNEL, "blocks": get_best_user_format(title, best_users)})
+            data=json.dumps({"channel": settings.config.SLACK_CHANNEL, "blocks": blocks})
         )
