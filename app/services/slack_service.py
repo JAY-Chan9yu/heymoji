@@ -72,7 +72,8 @@ class SlackService:
             await cls.add_user(
                 username=mapped_attr.get('name'),
                 slack_id=mapped_attr.get('slack_id'),
-                avatar_url=mapped_attr.get('avatar_url')
+                avatar_url=mapped_attr.get('avatar_url'),
+                department=mapped_attr.get('department')
             )
 
         elif _type == CommandType.UPDATE_USER_COMMAND.value:
@@ -85,7 +86,8 @@ class SlackService:
             await cls.update_user(
                 username=mapped_attr.get('name'),
                 slack_id=mapped_attr.get('slack_id'),
-                avatar_url=mapped_attr.get('avatar_url')
+                avatar_url=mapped_attr.get('avatar_url'),
+                department=mapped_attr.get('department')
             )
 
         elif _type == CommandType.SHOW_THIS_MONTH_PRISE.value:
@@ -104,7 +106,7 @@ class SlackService:
                 return
 
     @classmethod
-    async def add_user(cls, username: str, slack_id: str, avatar_url: str):
+    async def add_user(cls, username: str, slack_id: str, avatar_url: str, department: Optional[str] = None):
         user = await cls._user_service.get_user(slack_id=slack_id)
         if user:
             return
@@ -113,12 +115,19 @@ class SlackService:
             username=username,
             slack_id=slack_id,
             my_reaction=settings.config.DAY_MAX_REACTION,
-            avatar_url=avatar_url
+            avatar_url=avatar_url,
+            department=department
         )
         await cls._user_service.create_user(user=user)
 
     @classmethod
-    async def update_user(cls, slack_id: str, username: Optional[str], avatar_url: Optional[str]):
+    async def update_user(
+        cls,
+        slack_id: str,
+        username: Optional[str] = None,
+        avatar_url: Optional[str] = None,
+        department: Optional[str] = None
+    ):
         user = await cls._user_service.get_user(slack_id=slack_id)
         if not user:
             return
@@ -127,6 +136,8 @@ class SlackService:
             user.username = username
         if avatar_url:
             user.avatar_url = avatar_url
+        if department:
+            user.department = department
 
         await cls._user_service.update_user(user=user)
 

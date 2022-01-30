@@ -6,6 +6,7 @@ class BaseUser(BaseModel):
     id: Optional[int]
     username: str
     avatar_url: Optional[str]
+    department: Optional[str]
 
 
 class User(BaseUser):
