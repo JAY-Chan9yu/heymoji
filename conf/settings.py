@@ -12,6 +12,7 @@ class BaseConfig(BaseSettings):
     REACTION_LIST: list = Field(env="REACTION_LIST", default=['heart'])
     SLACK_TOKEN: str = Field(env="SLACK_TOKEN")
     SLACK_CHANNEL: str = Field(env="SLACK_CHANNEL")
+    BEST_TYPES: list = Field(env="BEST_TYPES", default=[])
 
     class Config:
         env_file = ".env"

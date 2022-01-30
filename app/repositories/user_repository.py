@@ -1,5 +1,6 @@
-from sqlalchemy import func, and_, desc
-from sqlalchemy.orm import Session
+from typing import Optional
+
+from sqlalchemy import func, and_, desc, select, insert, update
 
 from app.domain.models.reaction_model import ReactionModel
 from app.domain.models.user_model import UserModel
@@ -9,19 +10,26 @@ from app.repositories.base_repository import BaseRepository
 
 class UserRepository(BaseRepository):
 
-    def __init__(self):
-        self.session: Session = self.get_connection()
+    def __init__(self, is_async: bool = True):
+        self.session = self.get_connection(is_async)
 
-    def get_user(self, slack_id: str) -> User:
-        user_model = self.session.query(UserModel).filter(UserModel.slack_id == slack_id).first()
-        return User(**user_model.__dict__)
+    async def get_user(self, slack_id: str) -> Optional[User]:
+        results = await self.session.execute(select(UserModel).filter(UserModel.slack_id == slack_id))
+        for result in results:
+            return User(**result[0].__dict__)
 
-    def get_users(self, year: int, month: int):
-        """
-        :param year: 년
-        :param month: 월
-        """
-        sub = self.session.query(ReactionModel.to_user_id, func.sum(ReactionModel.count))
+    async def get_users(self):
+        users = []
+        results = await self.session.execute(select(UserModel))
+
+        for result in results:
+            users.append(User(**result[0].__dict__))
+
+        return users
+
+    async def get_detail_user_by_year_and_month(self, year: int, month: int):
+        user_infos = []
+        sub = select(ReactionModel.to_user_id, func.sum(ReactionModel.count)).group_by(ReactionModel.to_user_id)
 
         if year and month:
             sub = sub.filter(ReactionModel.year == year, ReactionModel.month == month)
@@ -29,38 +37,36 @@ class UserRepository(BaseRepository):
             sub = sub.filter(ReactionModel.year == year)
         elif month:
             sub = sub.filter(ReactionModel.month == month)
-        sub = sub.group_by(ReactionModel.to_user_id).subquery()
 
-        users = self.session.query(
-            UserModel.id,
-            UserModel.avatar_url,
-            UserModel.username,
-            UserModel.my_reaction,
-            func.ifnull(sub.c.get('sum(reactions.count)'), 0).label('received_reaction_count')
-        ).outerjoin(
-            sub, and_(sub.c.to_user_id == UserModel.id)
-        ).order_by(
-            desc('received_reaction_count')
-        ).all()
-
-        user_infos = []
-        for user in users:
-            user_infos.append(
-                UserDetailInfo(
-                    id=user.id,
-                    avatar_url=user.avatar_url,
-                    username=user.username,
-                    my_reaction=user.my_reaction,
-                    received_reaction_count=user.received_reaction_count
-                )
+        sub = sub.subquery()
+        users = await self.session.execute(
+            select(
+                UserModel.id,
+                UserModel.avatar_url,
+                UserModel.username,
+                UserModel.my_reaction,
+                func.ifnull(sub.c.get('sum(reactions.count)'), 0).label('received_reaction_count')
+            ).outerjoin(
+                sub, and_(sub.c.to_user_id == UserModel.id)
+            ).order_by(
+                desc('received_reaction_count')
             )
+        )
+
+        for user in users:
+            user_infos.append(UserDetailInfo(**user._asdict()))
 
         return user_infos
 
-    def create_user(self, user: User):
-        db_user = UserModel(slack_id=user.slack_id, username=user.username, avatar_url=user.avatar_url)
-        self.session.add(db_user)
-        self.session.commit()
-        self.session.refresh(db_user)
+    async def create_user(self, user: User) -> User:
+        await self.session.execute(insert(UserModel).values(user.__dict__))
+        await self.session.commit()
+        return user
 
-        return db_user
+    async def update_my_reaction(self, user: User, is_increase: bool):
+        """내가 가지고 있는 reaction count 업데이트"""
+        user.my_reaction += 1 if is_increase else -1
+        await self.session.execute(
+            update(UserModel).filter(UserModel.id == user.id).values({'my_reaction': user.my_reaction})
+        )
+        await self.session.commit()

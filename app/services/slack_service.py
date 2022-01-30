@@ -1,43 +1,21 @@
-import re
+from enum import Enum
+from typing import Union, Optional
+
 import requests
 import json
 
-from dataclasses import dataclass
-from operator import itemgetter
-
-
-# about reaction
-from app.domain.schemas.slack_schema import SlackEventHook
+from app.domain.schemas.reaction_schema import ReactionType
+from app.domain.schemas.slack_schema import SlackEventHook, SlackChallengeHook, SlackEvent
 from app.domain.schemas.user_schema import User
 from app.services.reaction_service import ReactionService
 from app.services.user_service import UserService
+from app.utils.slack_message_format import get_best_user_format
 from conf import settings
 
-REMOVED_REACTION = 'reaction_removed'
-ADDED_REACTION = 'reaction_added'
-APP_MENTION_REACTION = 'app_mention'
 
-# about command
-CREATE_USER_COMMAND = 'create_user'
-SHOW_THIS_MONTH_PRISE = '칭찬을 보여줘'
-
-
-@dataclass
-class EventDto:
-    type: str  # ex: reaction_added
-    user: str  # 리액션을 한 유저(slack_id)
-    item: dict  # type, channel, ts
-    reaction: str  # 리액션(이모지)
-    item_user: str  # 리액션을 받은 유저(slack_id)
-    event_ts: str
-    text: str  # app mention text
-
-
-@dataclass
-class AddUserCommandDto:
-    name: str
-    slack_id: str
-    avatar_url: str
+class CommandType(Enum):
+    CREATE_USER_COMMAND = 'create_user'
+    SHOW_THIS_MONTH_PRISE = 'show_best_member'
 
 
 class SlackService:
@@ -45,224 +23,110 @@ class SlackService:
     _reaction_service = ReactionService
 
     @classmethod
-    def check_challenge(cls, event: SlackEventHook) -> dict:
-        # slack Enable Events
-        if 'challenge' in event:
-            return {"challenge": event['challenge']}
-
-        # check slack event
-        if "event" in event:
-            event_dto = EventDto(event['event'])
-
-            if event_dto.type in [ADDED_REACTION, REMOVED_REACTION]:
-                # 다른 사람에게만 이모지 줄 수 있음
-                if event_dto.item_user != event_dto.user:
-                    cls.assign_emoji(event_dto)
-            elif event_dto.type == APP_MENTION_REACTION:
-                cls.manage_app_mention(event_dto)
-
-        return {}
+    async def slack_web_hook_handler(cls, slack_event: Union[SlackEventHook, SlackChallengeHook]) -> Optional[dict]:
+        if type(slack_event) == SlackChallengeHook:
+            # todo response 스키마로 만들기
+            return {"challenge": slack_event.challenge}
+        else:
+            user = await cls._user_service.get_user(slack_event.event.user)
+            await cls.slack_event_handler(event=slack_event.event, user=user)
 
     @classmethod
-    def assign_emoji(cls, event: EventDto):
-        """
-        reaction process
-        """
-        if event.reaction not in settings.config.REACTION_LIST:
-            return
+    async def slack_event_handler(cls, event: SlackEvent, user: User):
 
-        if event.type == ADDED_REACTION:
-            user = cls._user_service.get_user(event.user)
-            # 멤버에게 줄 수 있는 나의 reaction 개수 체크
-            if user.my_reaction > 0:
-                cls._reaction_service.update_my_reaction(user, False)
-                cls._reaction_service.update_added_reaction(
-                    reaction_type=event.reaction,
-                    item_user=event.item_user,
-                    user=event.user,
-                    is_increase=True
-                )
-
-        elif event.type == REMOVED_REACTION:
-            user = cls._user_service.get_user(event.user)
-            # 멤버에게 전달한 reaction 을 삭제하는 경우 (이미 하루 최대의 reaction 개수인 경우 더이상 추가하지 않음)
-            if user.my_reaction < settings.config.DAY_MAX_REACTION:
-                cls._reaction_service.update_my_reaction(user, True)
-                cls._reaction_service.update_added_reaction(
-                    reaction_type=event.reaction,
-                    item_user=event.item_user,
-                    user=event.user,
-                    is_increase=False
-                )
+        if event.type in [ReactionType.ADDED_REACTION.value, ReactionType.REMOVED_REACTION.value]:
+            if event.item_user == event.user:
+                return
+            await cls._reaction_service.update_reaction(event, user)
+        elif event.type == ReactionType.APP_MENTION_REACTION.value:
+            await cls.manage_app_mention(event)
 
     @classmethod
-    def manage_app_mention(cls, event: EventDto):
-        """
-        명령어를 분기 처리하는 함수
-        ex: <@ABCDEFG> --create_user --name=JAY --slack_id=ABCDEFG --avatar_url=https://blablac.com/abcd
+    async def manage_app_mention(cls, event: SlackEvent):
+        event_command = event.text.split()
+        event_command.pop(0)  # 맨션된 슬랙봇 아이디 제거
+        print(f'event_command: {event_command}')
 
-        오늘의 칭찬 리스트를 return
-        ex: <@ABCDEFG> -- 오늘의 칭찬을 보여줘 --
-        """
-
-        event_command = event.text.split('--')
-        print('event_commnet', event_command)
-        event_command.pop(0)  # 첫번째 값은 user slack_id
         if not event_command:
             return
 
-        _type = event_command.pop(0).strip(' ')
+        _type = event_command.pop(0).strip('--')
+        if _type == CommandType.CREATE_USER_COMMAND.value:
+            """
+            명령어를 분기 처리하는 함수
+            ex: <@슬랙봇> --create_user --name=JAY --slack_id=a1b1c1d1 --avatar_url=https://blablac.com/abcd
+            """
+            # todo: 맨션 맵핑하는 함수 만들기
+            if len(event_command) >= 2:
+                await cls.add_user(
+                    username=event_command[0].split('=')[1],
+                    slack_id=event_command[1].split('=')[1],
+                    avatar_url=event_command[2].split('=')[1] if len(event_command) == 3 else ''
+                )
 
-        if _type == CREATE_USER_COMMAND:
-            if len(event_command) == 3:
-                add_user_cmd_dto = AddUserCommandDto(event_command[0], event_command[1], event_command[2])
-                cls.add_user(add_user_cmd_dto)
+        elif _type == CommandType.SHOW_THIS_MONTH_PRISE.value:
+            """
+            이번달 베스트 멤버 리스트 추출
+            ex: <@슬랙봇> --show_beet_member --year=12 --month=1
+            """
+            year = event_command[0].split('=')[1]
+            month = event_command[1].split('=')[1]
 
-        elif SHOW_THIS_MONTH_PRISE in _type:
-            # 2021년 8월의 칭찬을 보여줘
-            year = re.sub(r'[^0-9]', '', _type.split(' ')[0])
-            month = re.sub(r'[^0-9]', '', _type.split(' ')[1])
-
-            # 숫자로 변환 try 해보고 안되면 return
             try:
-                year = int(year)
-                month = int(month)
-                prise_list = cls.show_this_month_prise(year, month)
-                cls.send_prise_msg_to_slack(_type, prise_list)
-            except:
+                best_users = await cls.get_this_month_best_user(int(year), int(month))
+                cls.send_best_user_list_to_slack(f"{year}년 {month}월 베스트 멤버", best_users)
+            except Exception as err:
+                print(err)
                 return
 
     @classmethod
-    def add_user(cls, add_user_cmd_dto: AddUserCommandDto):
-        """
-        user 추가 명령어
-        """
-        db_user = cls._user_service.get_user(slack_id=add_user_cmd_dto.slack_id)
-        if db_user:
+    async def add_user(cls, username: str, slack_id: str, avatar_url: str):
+        user = await cls._user_service.get_user(slack_id=slack_id)
+        if user:
             return
 
         user = User(
-            username=add_user_cmd_dto.name,
-            slack_id=add_user_cmd_dto.slack_id,
-            using_emoji_count=settings.config.DAY_MAX_REACTION, get_emoji_count=0,
-            avatar_url=add_user_cmd_dto.avatar_url
+            username=username,
+            slack_id=slack_id,
+            my_reaction=settings.config.DAY_MAX_REACTION,
+            avatar_url=avatar_url
         )
-        cls._user_service.create_user(user=user)
+        await cls._user_service.create_user(user=user)
 
     @classmethod
-    def show_this_month_prise(cls, year: int, month: int, db):
+    async def get_this_month_best_user(cls, year: int, month: int):
         """
-        이번 달 최고 멤버들 뽑기
-        member_reaction_list = [{'username' : '김병욱', 'love' : 3, 'funny' : 5, 'help' : 5, 'good' : 10, 'bad' : 5},{'username' : '김병욱', 'love' : 3, 'funny' : 5, 'help' : 5, 'good' : 10, 'bad' : 5}]
+        이번달 이모지 타입별 가장 많은 이모지를 받은 유저 추출
         """
-        user_list = db.query(User).all()
+        user_received_emoji_infos = []
+        best_users = {}
+        users = await cls._user_service.get_users()
 
-        member_reaction_list = []
-        for user in user_list:
-            get_member_reaction = cls._reaction_service.get_member_reaction_count(user, year, month)
-            member_reaction_list.append(get_member_reaction)
+        for user in users:
+            user_received_emoji_infos.append(
+                await cls._reaction_service.get_user_received_emoji_info(user, year, month)
+            )
 
-        # 각각의 best member 뽑기
-        best_love = sorted(member_reaction_list, key=itemgetter('love'))[-1]['username']
-        best_funny = sorted(member_reaction_list, key=itemgetter('funny'))[-1]['username']
-        best_help = sorted(member_reaction_list, key=itemgetter('help'))[-1]['username']
-        best_good = sorted(member_reaction_list, key=itemgetter('good'))[-1]['username']
-        best_bad = sorted(member_reaction_list, key=itemgetter('bad'))[-1]['username']
+        for best_type in settings.config.BEST_TYPES:
+            max_emoji_count = 0
 
-        prise_list = dict(best_love=best_love,
-                          best_funny=best_funny,
-                          best_help=best_help,
-                          best_good=best_good,
-                          best_bad=best_bad)
+            for user_received_emoji_info in user_received_emoji_infos:
+                try:
+                    emoji_info = next(filter(lambda x: x.type == best_type['emoji'], user_received_emoji_info.emoji))
 
-        return prise_list
+                    if max_emoji_count < emoji_info.count:
+                        max_emoji_count = emoji_info.count
+                        best_users[best_type['emoji']] = user_received_emoji_info.username
 
-    @classmethod
-    def send_prise_msg_to_slack(cls, title, prise_list):
-        token = settings.config.SLACK_TOKEN
+                except StopIteration:
+                    continue
 
-        title = '칭찬봇아 ~~ ' + title
-        blocks = [
-            {
-                "type": "section",
-                "text": {
-                    "type": "mrkdwn",
-                    "text": "*{}*".format(title)
-                }
-            },
-            {
-                "type": "section",
-                "block_id": "section567",
-                "text": {
-                    "type": "mrkdwn",
-                    "text": "이번 달 가장 많은 사랑을 받은 크루는?! {} :heart: ".format(prise_list.get('best_love'))
-                },
-                "accessory": {
-                    "type": "image",
-                    "image_url": "https://i.pinimg.com/originals/bf/88/4c/bf884cb9b29803db712b77f1bce4f462.jpg",
-                    "alt_text": "Haunted hotel image"
-                }
-            },
-            {
-                "type": "section",
-                "block_id": "section568",
-                "text": {
-                    "type": "mrkdwn",
-                    "text": "이번 달 개그맨 보다 더 많은 웃음을 준 크루는?! {} :kkkk: :기쁨: ".format(prise_list.get('best_funny'))
-                },
-                "accessory": {
-                    "type": "image",
-                    "image_url": "https://t1.daumcdn.net/cfile/tistory/99E10D3F5ADC079602",
-                    "alt_text": "Haunted hotel image"
-                }
-            },
-            {
-                "type": "section",
-                "block_id": "section569",
-                "text": {
-                    "type": "mrkdwn",
-                    "text": "이번 달 많은 크루를 도와준 천사 크루는?! {} :pray: :기도: ".format(prise_list.get('best_help'))
-                },
-                "accessory": {
-                    "type": "image",
-                    "image_url": "http://images.goodoc.kr/images/article/2018/08/20/428733/43bedd6ad60a_3bbaf99a964d.png",
-                    "alt_text": "Haunted hotel image"
-                }
-            },
-            {
-                "type": "section",
-                "block_id": "section570",
-                "text": {
-                    "type": "mrkdwn",
-                    "text": "이번 달 가장 많은 이슈를 처리해 준 크루는?! {} :+1: :wow: :wonderfulk: :천재_개발자:".format(prise_list.get('best_good'))
-                },
-                "accessory": {
-                    "type": "image",
-                    "image_url": "https://cdn.clien.net/web/api/file/F03/11193449/82140da86eecc4.jpg?w=500&h=1000",
-                    "alt_text": "Haunted hotel image"
-                }
-            },
-            {
-                "type": "section",
-                "block_id": "section571",
-                "text": {
-                    "type": "mrkdwn",
-                    "text": "이번 달 가장 많은 크루를 당황시킨 크루는?! {} :eye_shaking: ".format(prise_list.get('best_bad'))
-                },
-                "accessory": {
-                    "type": "image",
-                    "image_url": "https://d2u3dcdbebyaiu.cloudfront.net/uploads/atch_img/693/6ebb2cf8ed8a3f6cdebe2f6aedc640e6.jpeg",
-                    "alt_text": "Haunted hotel image"
-                }
-            }
-        ]
-
-        cls.post_message(token, settings.config.SLACK_CHANNEL, blocks=blocks)
+        return best_users
 
     @classmethod
-    def post_message(cls, token, channel, blocks):
+    def send_best_user_list_to_slack(cls, title: str, best_users: dict):
         requests.post(
             "https://slack.com/api/chat.postMessage",
-            headers={"Authorization": "Bearer "+token, "Content-Type": "application/json"},
-            data=json.dumps({"channel": channel, "blocks": blocks})
+            headers={"Authorization": "Bearer " + settings.config.SLACK_TOKEN, "Content-Type": "application/json"},
+            data=json.dumps({"channel": settings.config.SLACK_CHANNEL, "blocks": get_best_user_format(title, best_users)})
         )

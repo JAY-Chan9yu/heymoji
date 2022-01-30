@@ -1,11 +1,29 @@
+from typing import Optional
+
 from pydantic import BaseModel, Field
 
 
-class SlackEventHook(BaseModel):
+class SlackEvent(BaseModel):
+    type: str = Field(title='리액션 타입')
+    user: str = Field(title='리액션을 한 유저(slack_id)')
+    item_user: str = Field(title='리액션을 받은 유저(slack_id)')
+    reaction: str = Field(title='리액션(이모지)')
+    text: Optional[str] = Field(title='app mention text', default=None)
+    event_ts: str
+    item: dict  # type, channel, ts
+
+
+class SlackMentionEvent(BaseModel):
+    type: str = Field(title='리액션 타입')
+    user: str = Field(title='리액션을 한 유저(slack_id)')
+    text: Optional[str] = Field(title='app mention text', default=None)
+    event_ts: str
+
+
+class BaseSlackEventHook(BaseModel):
     token: str
     team_id: str = Field(title='워크스페이스 아이디')
     api_app_id: str = Field(title='애플리케이션 아이디')
-    event: dict = Field(title='이벤트 상세')
     type: str = Field(title='이벤트 타입')
     event_id: str = Field(title='이벤트 아이디')
     event_time: int = Field(title='이벤트 발생 시간')
@@ -13,3 +31,21 @@ class SlackEventHook(BaseModel):
     event_context: str = Field(title='이벤트 식별자')
     authorizations: list = Field(title='인증서')
 
+
+class SlackEventHook(BaseSlackEventHook):
+    """슬랙 이벤트 웹훅 스키마"""
+    event: SlackEvent = Field(title='이벤트 상세')
+
+
+class SlackMentionHook(BaseSlackEventHook):
+    """슬랙 멘션 이벤트 웹훅 스키마"""
+    event: SlackMentionEvent = Field(title='이벤트 상세')
+
+
+class SlackChallengeHook(BaseModel):
+    """
+    슬랙 웹훅 연결 테스트를 위한 스키마
+    """
+    token: str
+    challenge: str
+    type: str
