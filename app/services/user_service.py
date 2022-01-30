@@ -8,8 +8,13 @@ class UserService:
     _user_repository = UserRepository
 
     @classmethod
-    async def get_detail_user_by_year_and_month(cls, year: Optional[int] = None, month: Optional[int] = None):
-        return await cls._user_repository().get_detail_user_by_year_and_month(year, month)
+    async def get_detail_user(
+        cls,
+        year: Optional[int] = None,
+        month: Optional[int] = None,
+        department: Optional[str] = None
+    ):
+        return await cls._user_repository().get_detail_user(year, month, department)
 
     @classmethod
     async def get_users(cls):

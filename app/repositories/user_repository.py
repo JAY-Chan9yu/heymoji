@@ -27,7 +27,12 @@ class UserRepository(BaseRepository):
 
         return users
 
-    async def get_detail_user_by_year_and_month(self, year: int, month: int):
+    async def get_detail_user(
+        self,
+        year: Optional[int] = None,
+        month: Optional[int] = None,
+        department: Optional[str] = None
+    ):
         user_infos = []
         sub = select(ReactionModel.to_user_id, func.sum(ReactionModel.count)).group_by(ReactionModel.to_user_id)
 
@@ -39,20 +44,24 @@ class UserRepository(BaseRepository):
             sub = sub.filter(ReactionModel.month == month)
 
         sub = sub.subquery()
-        users = await self.session.execute(
-            select(
-                UserModel.id,
-                UserModel.avatar_url,
-                UserModel.username,
-                UserModel.department,
-                UserModel.my_reaction,
-                func.ifnull(sub.c.get('sum(reactions.count)'), 0).label('received_reaction_count')
-            ).outerjoin(
-                sub, and_(sub.c.to_user_id == UserModel.id)
-            ).order_by(
-                desc('received_reaction_count')
-            )
+
+        q = select(
+            UserModel.id,
+            UserModel.avatar_url,
+            UserModel.username,
+            UserModel.department,
+            UserModel.my_reaction,
+            func.ifnull(sub.c.get('sum(reactions.count)'), 0).label('received_reaction_count')
+        ).outerjoin(
+            sub, and_(sub.c.to_user_id == UserModel.id)
+        ).order_by(
+            desc('received_reaction_count')
         )
+
+        if department:
+            q = q.filter(UserModel.department == department)
+
+        users = await self.session.execute(q)
 
         for user in users:
             user_infos.append(UserDetailInfo(**user._asdict()))

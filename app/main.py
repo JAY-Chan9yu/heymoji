@@ -42,10 +42,8 @@ async def create_user(user: User):
 @app.get("/users/", name="전체 유저 리스트 반환 api", description="""
 유저리스트를 반환합니다. 받은 reaction 이 높은 순으로 정렬합니다.
 """, response_model=List[UserDetailInfo])
-async def get_user(year: Optional[int] = None, month: Optional[int] = None):
-    users = await UserService.get_detail_user_by_year_and_month(year=year, month=month)
-    if not users:
-        raise HTTPException(status_code=404, detail="Does Not Exists (User)")
+async def get_user(year: Optional[int] = None, month: Optional[int] = None, department: Optional[str] = None):
+    users = await UserService.get_detail_user(year=year, month=month, department=department)
     return users
 
 
