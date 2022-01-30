@@ -44,6 +44,7 @@ class UserRepository(BaseRepository):
                 UserModel.id,
                 UserModel.avatar_url,
                 UserModel.username,
+                UserModel.department,
                 UserModel.my_reaction,
                 func.ifnull(sub.c.get('sum(reactions.count)'), 0).label('received_reaction_count')
             ).outerjoin(
