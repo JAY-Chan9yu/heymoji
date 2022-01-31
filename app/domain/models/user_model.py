@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String
+from sqlalchemy import Column, Integer, String, Boolean
 
 from app.repositories.base_repository import Base
 
@@ -12,3 +12,4 @@ class UserModel(Base):
     my_reaction = Column(Integer, nullable=False, default=5)  # 사용할 수 있는 리액션(이모지) 개수
     avatar_url = Column(String(500), nullable=True)  # 프로필 이미지 url
     department = Column(String(50), nullable=True)  # 부서
+    is_display = Column(Boolean, default=True)  # 공개 여부

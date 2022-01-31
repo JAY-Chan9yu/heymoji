@@ -53,6 +53,8 @@ class UserRepository(BaseRepository):
             UserModel.department,
             UserModel.my_reaction,
             func.ifnull(sub.c.get('sum(reactions.count)'), 0).label('received_reaction_count')
+        ).filter(
+            UserModel.is_display == 1
         ).outerjoin(
             sub, and_(sub.c.to_user_id == UserModel.id)
         ).order_by(

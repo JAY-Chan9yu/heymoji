@@ -7,6 +7,7 @@ class BaseUser(BaseModel):
     username: str
     avatar_url: Optional[str]
     department: Optional[str]
+    is_display: bool = True
 
 
 class User(BaseUser):

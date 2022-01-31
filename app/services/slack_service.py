@@ -18,7 +18,9 @@ class CommandType(Enum):
     HELP_COMMAND = 'help'
     CREATE_USER_COMMAND = 'create_user'
     UPDATE_USER_COMMAND = 'update_user'
-    SHOW_THIS_MONTH_PRISE = 'show_best_member'
+    HIDE_USER_COMMAND = 'hide_user'
+    SHOW_USER_COMMAND = 'show_user'
+    SHOW_BEST_MEMBER_COMMAND = 'show_best_member'
 
 
 class SlackService:
@@ -46,6 +48,7 @@ class SlackService:
 
     @classmethod
     async def manage_app_mention(cls, event: SlackEvent):
+        # todo: mention service 분리, 커맨드 분기처리 로직 개선
         event_command = event.text.split()
         event_command.pop(0)  # 맨션된 슬랙봇 아이디 제거
         print(f'event_command: {event_command}')
@@ -90,7 +93,25 @@ class SlackService:
                 department=mapped_attr.get('department')
             )
 
-        elif _type == CommandType.SHOW_THIS_MONTH_PRISE.value:
+        elif _type == CommandType.SHOW_USER_COMMAND.value:
+            """
+            ex: <@슬랙봇> --hide_user --slack_id=a1b1c1d1
+            """
+            if not mapped_attr.get('slack_id'):
+                return
+
+            await cls.show_user(slack_id=mapped_attr.get('slack_id'))
+
+        elif _type == CommandType.HIDE_USER_COMMAND.value:
+            """
+            ex: <@슬랙봇> --show_user --slack_id=a1b1c1d1
+            """
+            if not mapped_attr.get('slack_id'):
+                return
+
+            await cls.hide_user(slack_id=mapped_attr.get('slack_id'))
+
+        elif _type == CommandType.SHOW_BEST_MEMBER_COMMAND.value:
             """
             이번달 베스트 멤버 리스트 추출
             ex: <@슬랙봇> --show_best_member --year=12 --month=1
@@ -139,6 +160,26 @@ class SlackService:
         if department:
             user.department = department
 
+        await cls._user_service.update_user(user=user)
+
+    @classmethod
+    async def hide_user(cls, slack_id: str):
+        user = await cls._user_service.get_user(slack_id=slack_id)
+
+        if not user or user.is_display is False:
+            return
+
+        user.is_display = False
+        await cls._user_service.update_user(user=user)
+
+    @classmethod
+    async def show_user(cls, slack_id: str):
+        user = await cls._user_service.get_user(slack_id=slack_id)
+
+        if not user or user.is_display is True:
+            return
+
+        user.is_display = True
         await cls._user_service.update_user(user=user)
 
     @classmethod
