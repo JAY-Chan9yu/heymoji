@@ -1,29 +1,19 @@
-import sys
-import os
+from typing import List, Optional
 
-# 모듈 경로를 못찾는 경우가 있어서 sys.path 에 경로 추가 (IDE를 사용하면 잘 찾음)
-script_dir = os.path.dirname(os.path.abspath(__file__))
-if os.path.dirname(script_dir) not in sys.path:
-    sys.path.insert(0, os.path.dirname(script_dir))
-
-from typing import Optional
-
-from fastapi import FastAPI, Request, Depends, HTTPException
-from sqlalchemy.orm import Session
+from fastapi import FastAPI, HTTPException, Depends
 from starlette.middleware.cors import CORSMiddleware
 
-from services import SlackService
-from conf.database import get_db, engine, Base
-from app import crud, schemas
+from app.dependency.requests import get_slack_event
+from app.domain.schemas.reaction_schema import UserReceivedEmojiInfo
+from app.domain.schemas.user_schema import User, UserDetailInfo
 
+from app.services.reaction_service import ReactionService
+from app.services.slack_service import SlackService
+from app.services.user_service import UserService
 
-# Base.metadata.drop_all(bind=engine)
-Base.metadata.create_all(bind=engine)
 app = FastAPI()
 
-origins = [
-    '*'
-]
+origins = ['*']
 
 app.add_middleware(
     CORSMiddleware,
@@ -34,35 +24,51 @@ app.add_middleware(
 )
 
 
-@app.post(path="/slack")
-async def slack(request: Request, db: Session = Depends(get_db)):
-    request_event = await request.json()
-    slack_service = SlackService()
-    response = slack_service.check_challenge(request_event, db)
-
+@app.post(path="/slack", name='슬랙 웹훅 api')
+async def slack(slack_event=Depends(get_slack_event)):
+    response = await SlackService.slack_web_hook_handler(slack_event)
     return response
 
 
-@app.post("/users/", response_model=schemas.User)
-def create_user(user: schemas.UserCreate, db: Session = Depends(get_db)):
-    db_user = crud.get_user(db, item_user=user.slack_id)
-
-    if db_user:
+@app.post("/users/", name="유저 생성 api", description="""
+""", response_model=UserDetailInfo)
+async def create_user(user: User):
+    user = await UserService.get_user(slack_id=user.slack_id)
+    if user:
         raise HTTPException(status_code=400, detail="already registered")
+    return await UserService.create_user(user=user)
 
-    return crud.create_user(db=db, user=user)
+
+@app.get("/users/", name="전체 유저 리스트 반환 api", description="""
+유저리스트를 반환합니다. 받은 reaction 이 높은 순으로 정렬합니다.
+""", response_model=List[UserDetailInfo])
+async def get_user(year: Optional[int] = None, month: Optional[int] = None, department: Optional[str] = None):
+    users = await UserService.get_detail_user(year=year, month=month, department=department)
+    return users
 
 
-@app.get("/users/")
-def get_user(db: Session = Depends(get_db), year: Optional[int] = None, month: Optional[int] = None):
-    db_user = crud.get_users(db, year, month)
+@app.get("/users/{user_id}/reactions/", name="유저 리액션 반환 api", description="""
+특정 유저가 받은 reaction 과 전달한 유저정보를 반환합니다.
+""", response_model=List[UserReceivedEmojiInfo])
+async def get_reactions(
+    user_id: int = 0,
+    year: Optional[int] = None,
+    month: Optional[int] = None
+):
+    return await ReactionService.get_user_reactions(user_id, year, month)
 
-    if not db_user:
-        raise HTTPException(status_code=404, detail="Does Not Exists (User)")
 
-    return db_user
+@app.get("/users/{slack_id}/my_reaction/", description="""
+특정 유저가 받은 reaction 정보를 전달합니다.
+""")
+async def get_my_reaction(
+    slack_id: str = '',
+    year: Optional[int] = None,
+    month: Optional[int] = None
+):
+    return await ReactionService.get_my_reaction(slack_id, year, month)
 
 
 @app.get("/")
-def read_root():
+async def read_root():
     return {"Hello": "World"}
