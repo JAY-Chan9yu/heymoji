@@ -14,24 +14,24 @@ class UserService:
         month: Optional[int] = None,
         department: Optional[str] = None
     ):
-        return await cls._user_repository().get_detail_user(year, month, department)
+        return await cls._user_repository.get_detail_user(year, month, department)
 
     @classmethod
     async def get_users(cls):
-        return await cls._user_repository().get_users()
+        return await cls._user_repository.get_users()
 
     @classmethod
     async def get_user(cls, slack_id: str):
-        return await cls._user_repository().get_user(slack_id)
+        return await cls._user_repository.get_user(slack_id)
 
     @classmethod
     async def create_user(cls, user: User):
-        return await cls._user_repository().create_user(user)
+        return await cls._user_repository.create_user(user)
 
     @classmethod
     async def update_user(cls, user: User):
-        return await cls._user_repository().update_user(user)
+        return await cls._user_repository.update_user(user)
 
     @classmethod
     async def update_my_reaction(cls, user: User, is_increase: bool):
-        return await cls._user_repository().update_my_reaction(user, is_increase)
+        return await cls._user_repository.update_my_reaction(user, is_increase)

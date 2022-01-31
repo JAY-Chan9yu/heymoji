@@ -28,12 +28,12 @@ class ReactionService:
 
     @classmethod
     async def get_user_reactions(cls, user_id: int, year: Optional[int] = None, month: Optional[int] = None):
-        return await cls._reaction_repository().get_reactions(user_id, year, month)
+        return await cls._reaction_repository.get_reactions(user_id, year, month)
 
     @classmethod
     async def get_my_reaction(cls, slack_id: str, year: Optional[int] = None, month: Optional[int] = None) -> dict:
         reaction_data = {}
-        reactions = await cls._reaction_repository().get_my_reactions(slack_id, year, month)
+        reactions = await cls._reaction_repository.get_my_reactions(slack_id, year, month)
 
         for reaction in reactions:
             if not reaction_data.get(cls.change_str_to_emoji(reaction.type)):
@@ -45,7 +45,7 @@ class ReactionService:
 
     @classmethod
     async def get_reaction(cls, reaction_type: str, received_user: User, send_user: User) -> ReactionMeta:
-        return await cls._reaction_repository().get_current_reaction(reaction_type, received_user, send_user)
+        return await cls._reaction_repository.get_current_reaction(reaction_type, received_user, send_user)
 
     @classmethod
     async def update_reaction(
@@ -62,13 +62,13 @@ class ReactionService:
             return
 
         reaction = await cls.get_reaction(reaction_type, received_user, send_user)
-        return await cls._reaction_repository().update_reaction(
+        return await cls._reaction_repository.update_reaction(
             reaction, reaction_type, received_user, send_user, is_increase
         )
 
     @classmethod
     async def get_user_received_emoji_info(cls, user: User, year: int, month: int) -> UserReceivedEmojiInfo:
-        reactions = await cls._reaction_repository().get_month_reactions_by_user(user, year, month)
+        reactions = await cls._reaction_repository.get_month_reactions_by_user(user, year, month)
         user_received_reactions = UserReceivedEmojiInfo(username=user.username)
 
         emoji_counts = {}

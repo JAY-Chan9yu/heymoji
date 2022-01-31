@@ -8,9 +8,14 @@ from conf import settings
 
 
 Base = declarative_base()
+async_engine = create_async_engine(
+    f'mysql+aiomysql://{settings.config.USERNAME}:{settings.config.PASSWORD}'
+    f'@{settings.config.HOST}:{settings.config.PORT}/{settings.config.DATABASE}',
+    future=True, echo=True
+)
 
 
-class BaseRepository:
+class MysqlRepository:
     """
     todo: 공통된 session 사용시 AsyncSession 에서 refresh 를 하여 업데이트된 데이터를 갱신하는데,
           잘 되지 않아 Context Manager 로 DB 접근시 새로운 세션을 생성하여 사용.
@@ -27,14 +32,9 @@ class BaseRepository:
             참고: https://blog.neonkid.xyz/266
             """
             if is_async:
-                engine = create_async_engine(
-                    f'mysql+aiomysql://{settings.config.USERNAME}:{settings.config.PASSWORD}'
-                    f'@{settings.config.HOST}:{settings.config.PORT}/{settings.config.DATABASE}',
-                    future=True, echo=True
-                )
                 # todo: asyncio scoped session 가 필요한가?
                 # https://docs.sqlalchemy.org/en/14/orm/extensions/asyncio.html#using-asyncio-scoped-session
-                cls._client = AsyncSession(bind=engine, expire_on_commit=False)
+                cls._client = AsyncSession(bind=async_engine, expire_on_commit=False)
 
             else:
                 engine = create_engine(
@@ -52,12 +52,7 @@ class BaseRepository:
 
 @asynccontextmanager
 async def async_session_manager():
-    engine = create_async_engine(
-        f'mysql+aiomysql://{settings.config.USERNAME}:{settings.config.PASSWORD}'
-        f'@{settings.config.HOST}:{settings.config.PORT}/{settings.config.DATABASE}',
-        future=True, echo=True
-    )
-    session = AsyncSession(bind=engine, expire_on_commit=True)
+    session = AsyncSession(bind=async_engine, expire_on_commit=True)
 
     try:
         yield session

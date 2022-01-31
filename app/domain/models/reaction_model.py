@@ -1,8 +1,8 @@
 from sqlalchemy import Column, Integer, String, ForeignKey
 from sqlalchemy.orm import relationship
 
+from app.database import Base
 from app.domain.models.user_model import UserModel
-from app.repositories.base_repository import Base
 
 
 class ReactionModel(Base):
