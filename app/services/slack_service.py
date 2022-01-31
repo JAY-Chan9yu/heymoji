@@ -82,7 +82,7 @@ class SlackService:
         if not mapped_attr.get('slack_id'):
             return
 
-        user = await cls._user_service.get_user(slack_id=mapped_attr.get('slack_id'))
+        user = await cls._user_service.get_user(slack_id=mapped_attr['slack_id'])
         if user:
             return
 
@@ -100,16 +100,16 @@ class SlackService:
         if not mapped_attr.get('slack_id'):
             return
 
-        user = await cls._user_service.get_user(slack_id=mapped_attr.get('slack_id'))
+        user = await cls._user_service.get_user(slack_id=mapped_attr['slack_id'])
         if not user:
             return
 
         if mapped_attr.get('name'):
-            user.username = mapped_attr.get('name')
+            user.username = mapped_attr['name']
         if mapped_attr.get('avatar_url'):
-            user.avatar_url = mapped_attr.get('avatar_url')
+            user.avatar_url = mapped_attr['avatar_url']
         if mapped_attr.get('department'):
-            user.department = mapped_attr.get('department')
+            user.department = mapped_attr['department']
 
         await cls._user_service.update_user(user=user)
 
