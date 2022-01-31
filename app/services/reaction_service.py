@@ -13,13 +13,13 @@ class ReactionService:
     _user_service = UserService
 
     @classmethod
-    async def update_reaction(cls, event: SlackEvent, user: User):
+    async def update_user_reaction(cls, event: SlackEvent, user: User):
         if event.reaction not in settings.config.REACTION_LIST:
             return
 
         is_increase = True if event.type == ReactionType.ADDED_REACTION.value else False
         await cls._user_service.update_my_reaction(user, False)
-        await cls.update_added_reaction(
+        await cls.update_reaction(
             reaction_type=event.reaction,
             received_user_slack_id=event.item_user,
             send_user_slack_id=event.user,
@@ -48,7 +48,7 @@ class ReactionService:
         return await cls._reaction_repository().get_current_reaction(reaction_type, received_user, send_user)
 
     @classmethod
-    async def update_added_reaction(
+    async def update_reaction(
         cls,
         reaction_type: str,
         received_user_slack_id: str,
@@ -62,7 +62,7 @@ class ReactionService:
             return
 
         reaction = await cls.get_reaction(reaction_type, received_user, send_user)
-        return await cls._reaction_repository().update_added_reaction(
+        return await cls._reaction_repository().update_reaction(
             reaction, reaction_type, received_user, send_user, is_increase
         )
 

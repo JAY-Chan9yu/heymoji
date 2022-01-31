@@ -5,25 +5,26 @@ from sqlalchemy import func, and_, desc, select, insert, update
 from app.domain.models.reaction_model import ReactionModel
 from app.domain.models.user_model import UserModel
 from app.domain.schemas.user_schema import User, UserDetailInfo
-from app.repositories.base_repository import BaseRepository
+from app.repositories.base_repository import BaseRepository, async_session_manager
 
 
 class UserRepository(BaseRepository):
 
-    def __init__(self, is_async: bool = True):
-        self.session = self.get_connection(is_async)
-
     async def get_user(self, slack_id: str) -> Optional[User]:
-        results = await self.session.execute(select(UserModel).filter(UserModel.slack_id == slack_id))
-        for result in results:
-            return User(**result[0].__dict__)
+        q = select(UserModel).filter(UserModel.slack_id == slack_id)
+        async with async_session_manager() as session:
+            results = await session.execute(q)
+            for result in results:
+                return User(**result[0].__dict__)
 
     async def get_users(self):
         users = []
-        results = await self.session.execute(select(UserModel))
+        q = select(UserModel)
 
-        for result in results:
-            users.append(User(**result[0].__dict__))
+        async with async_session_manager() as session:
+            results = await session.execute(q)
+            for result in results:
+                users.append(User(**result[0].__dict__))
 
         return users
 
@@ -61,26 +62,27 @@ class UserRepository(BaseRepository):
         if department:
             q = q.filter(UserModel.department == department)
 
-        users = await self.session.execute(q)
-
-        for user in users:
-            user_infos.append(UserDetailInfo(**user._asdict()))
+        async with async_session_manager() as session:
+            results = await session.execute(q)
+            for result in results:
+                user_infos.append(UserDetailInfo(**result._asdict()))
 
         return user_infos
 
     async def create_user(self, user: User) -> User:
-        await self.session.execute(insert(UserModel).values(user.__dict__))
-        await self.session.commit()
+        q = insert(UserModel).values(user.__dict__)
+        async with async_session_manager() as session:
+            await session.execute(q)
         return user
 
     async def update_user(self, user: User):
-        await self.session.execute(update(UserModel).filter(UserModel.id == user.id).values(user.__dict__))
-        await self.session.commit()
+        q = update(UserModel).filter(UserModel.id == user.id).values(user.__dict__)
+        async with async_session_manager() as session:
+            await session.execute(q)
 
     async def update_my_reaction(self, user: User, is_increase: bool):
         """내가 가지고 있는 reaction count 업데이트"""
         user.my_reaction += 1 if is_increase else -1
-        await self.session.execute(
-            update(UserModel).filter(UserModel.id == user.id).values({'my_reaction': user.my_reaction})
-        )
-        await self.session.commit()
+        q = update(UserModel).filter(UserModel.id == user.id).values({'my_reaction': user.my_reaction})
+        async with async_session_manager() as session:
+            await session.execute(q)

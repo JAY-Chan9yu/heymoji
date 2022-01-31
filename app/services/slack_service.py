@@ -40,7 +40,7 @@ class SlackService:
         if event.type in [ReactionType.ADDED_REACTION.value, ReactionType.REMOVED_REACTION.value]:
             if event.item_user == event.user:
                 return
-            await cls._reaction_service.update_reaction(event, user)
+            await cls._reaction_service.update_user_reaction(event, user)
         elif event.type == ReactionType.APP_MENTION_REACTION.value:
             await cls.manage_app_mention(event)
 

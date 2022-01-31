@@ -1,3 +1,5 @@
+from contextlib import asynccontextmanager
+
 from sqlalchemy import create_engine
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
 from sqlalchemy.orm import sessionmaker, scoped_session, declarative_base, Session
@@ -9,6 +11,12 @@ Base = declarative_base()
 
 
 class BaseRepository:
+    """
+    todo: 공통된 session 사용시 AsyncSession 에서 refresh 를 하여 업데이트된 데이터를 갱신하는데,
+          잘 되지 않아 Context Manager 로 DB 접근시 새로운 세션을 생성하여 사용.
+          공통된 session 에서 refresh 정확히 사용하는 방법 찾아야함.
+          + 매번 커넥션을 하는게 맞을지? 아니면 커넥션을 계속 유지하고 있는게 맞을지?
+    """
     _client = None
 
     @classmethod
@@ -40,3 +48,21 @@ class BaseRepository:
                 ))
 
         return cls._client
+
+
+@asynccontextmanager
+async def async_session_manager():
+    engine = create_async_engine(
+        f'mysql+aiomysql://{settings.config.USERNAME}:{settings.config.PASSWORD}'
+        f'@{settings.config.HOST}:{settings.config.PORT}/{settings.config.DATABASE}',
+        future=True, echo=True
+    )
+    session = AsyncSession(bind=engine, expire_on_commit=True)
+
+    try:
+        yield session
+        await session.commit()
+    except:
+        await session.rollback()
+    finally:
+        await session.close()

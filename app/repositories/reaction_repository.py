@@ -7,13 +7,10 @@ from sqlalchemy.orm import joinedload
 from app.domain.models.reaction_model import ReactionModel
 from app.domain.schemas.reaction_schema import ReceivedEmojiInfo, Reaction, UserReceivedEmojiInfo, ReactionMeta
 from app.domain.schemas.user_schema import User
-from app.repositories.base_repository import BaseRepository
+from app.repositories.base_repository import BaseRepository, async_session_manager
 
 
 class ReactionRepository(BaseRepository):
-
-    def __init__(self, is_async: bool = True):
-        self.session = self.get_connection(is_async)
 
     async def get_my_reactions(self, slack_id: str, year: int, month: int) -> list:
         q = select(ReactionModel).options(
@@ -29,8 +26,11 @@ class ReactionRepository(BaseRepository):
             q = q.filter(ReactionModel.month == month)
     
         reactions = []
-        for reaction_column in await self.session.execute(q):
-            reactions.append(ReactionMeta(**reaction_column[0].__dict__))
+        async with async_session_manager() as session:
+            results = await session.execute(q)
+            for reaction_column in results:
+                reactions.append(ReactionMeta(**reaction_column[0].__dict__))
+
         return reactions
 
     async def get_reactions(self, user_id: int, year: int, month: int) -> List:
@@ -50,57 +50,61 @@ class ReactionRepository(BaseRepository):
         if month:
             q = q.filter(ReactionModel.month == month)
 
-        for reaction_column in await self.session.execute(q):
-            reaction = Reaction(**reaction_column[0].__dict__)
-            from_user_name = reaction.from_user.username
+        async with async_session_manager() as session:
+            results = await session.execute(q)
 
-            if not reaction_data.get(from_user_name):
-                reaction_data[from_user_name] = UserReceivedEmojiInfo(
-                    username=from_user_name,
-                    emoji=[ReceivedEmojiInfo(type=reaction.type, count=reaction.count)]
-                )
-            else:
-                reaction_data[from_user_name].emoji.append(
-                    ReceivedEmojiInfo(type=reaction.type, count=reaction.count)
-                )
+            for result in results:
+                reaction = Reaction(**result[0].__dict__)
+                from_user_name = reaction.from_user.username
+
+                if not reaction_data.get(from_user_name):
+                    reaction_data[from_user_name] = UserReceivedEmojiInfo(
+                        username=from_user_name,
+                        emoji=[ReceivedEmojiInfo(type=reaction.type, count=reaction.count)]
+                    )
+                else:
+                    reaction_data[from_user_name].emoji.append(
+                        ReceivedEmojiInfo(type=reaction.type, count=reaction.count)
+                    )
 
         return list(reaction_data.values())
 
     async def get_current_reaction(self, reaction_type: str, received_user: User, send_user: User) -> ReactionMeta:
         now_date = datetime.now().date()
 
-        results = await self.session.execute(
-            select(
-                ReactionModel
-            ).filter(
-                ReactionModel.year == now_date.year,
-                ReactionModel.month == now_date.month,
-                ReactionModel.from_user_id == send_user.id,
-                ReactionModel.to_user_id == received_user.id,
-                ReactionModel.type == reaction_type
-            )
+        q = select(
+            ReactionModel
+        ).filter(
+            ReactionModel.year == now_date.year,
+            ReactionModel.month == now_date.month,
+            ReactionModel.from_user_id == send_user.id,
+            ReactionModel.to_user_id == received_user.id,
+            ReactionModel.type == reaction_type
         )
 
-        for result in results:
-            return ReactionMeta(**result[0].__dict__)
+        async with async_session_manager() as session:
+            results = await session.execute(q)
+            for result in results:
+                return ReactionMeta(**result[0].__dict__)
 
     async def get_month_reactions_by_user(self, user: User, year: int, month: int) -> List[ReactionMeta]:
         reactions = []
-        results = await self.session.execute(
-            select(
-                ReactionModel
-            ).filter(
-                ReactionModel.year == year,
-                ReactionModel.month == month,
-                ReactionModel.to_user_id == user.id
-            )
+        q = select(
+            ReactionModel
+        ).filter(
+            ReactionModel.year == year,
+            ReactionModel.month == month,
+            ReactionModel.to_user_id == user.id
         )
 
-        for result in results:
-            reactions.append(ReactionMeta(**result[0].__dict__))
+        async with async_session_manager() as session:
+            results = await session.execute(q)
+            for result in results:
+                reactions.append(ReactionMeta(**result[0].__dict__))
+
         return reactions
 
-    async def update_added_reaction(
+    async def update_reaction(
         self,
         reaction: ReactionMeta,
         reaction_type: str,
@@ -119,18 +123,21 @@ class ReactionRepository(BaseRepository):
                 to_user_id=received_user.id,
                 count=1
             )
-            await self.session.execute(insert(ReactionModel).values(reaction.__dict__))
-            await self.session.commit()
+            q = insert(ReactionModel).values(reaction.__dict__)
 
         elif reaction:
             if is_increase is False and reaction.count == 0:
                 return
             reaction.count += 1 if is_increase else -1
-            await self.session.execute(
-                update(ReactionModel).filter(
-                    ReactionModel.id == reaction.id
-                ).values(
-                    {'count': reaction.count}
-                )
+
+            q = update(ReactionModel).filter(
+                ReactionModel.id == reaction.id
+            ).values(
+                {'count': reaction.count}
             )
-            await self.session.commit()
+        else:
+            q = None
+
+        if q is not None:
+            async with async_session_manager() as session:
+                await session.execute(q)
