@@ -1,3 +1,4 @@
+import asyncio
 from enum import Enum
 from typing import Union, Optional
 
@@ -38,133 +39,86 @@ class SlackService:
 
     @classmethod
     async def slack_event_handler(cls, event: SlackEvent, user: User):
-
+        """
+        슬랙 이벤트를 받아서 type 별로 처리하는 함수
+        """
         if event.type in [ReactionType.ADDED_REACTION.value, ReactionType.REMOVED_REACTION.value]:
             if event.item_user == event.user:
                 return
             await cls._reaction_service.update_user_reaction(event, user)
         elif event.type == ReactionType.APP_MENTION_REACTION.value:
-            await cls.manage_app_mention(event)
+            await cls.mention_command_handler(event)
 
     @classmethod
-    async def manage_app_mention(cls, event: SlackEvent):
-        # todo: mention service 분리, 커맨드 분기처리 로직 개선
+    async def mention_command_handler(cls, event: SlackEvent):
+        mention_functions = {
+            CommandType.HELP_COMMAND.value: cls.send_help_command,
+            CommandType.CREATE_USER_COMMAND.value: cls.add_user,
+            CommandType.UPDATE_USER_COMMAND.value: cls.update_user,
+            CommandType.HIDE_USER_COMMAND.value: cls.hide_user,
+            CommandType.SHOW_USER_COMMAND.value: cls.show_user,
+            CommandType.SHOW_BEST_MEMBER_COMMAND.value: cls.send_best_user_list_to_slack
+        }
         event_command = event.text.split()
         event_command.pop(0)  # 맨션된 슬랙봇 아이디 제거
-        print(f'event_command: {event_command}')
 
         if not event_command:
             return
 
-        _type = event_command.pop(0).strip('--')
+        cmd = event_command.pop(0).strip('--')
         mapped_attr = mapping_slack_command_to_dict(event_command)
+        func = mention_functions.get(cmd)
 
-        if _type == CommandType.HELP_COMMAND.value:
-            """
-            ex: <@슬랙봇> --help
-            """
-            cls.send_help_command()
+        if func is None:
+            return
 
-        if _type == CommandType.CREATE_USER_COMMAND.value:
-            """
-            ex: <@슬랙봇> --create_user --name=JAY --slack_id=a1b1c1d1 --avatar_url=https://blablac.com/abcd
-            """
-            if not mapped_attr.get('slack_id'):
-                return
-
-            await cls.add_user(
-                username=mapped_attr.get('name'),
-                slack_id=mapped_attr.get('slack_id'),
-                avatar_url=mapped_attr.get('avatar_url'),
-                department=mapped_attr.get('department')
-            )
-
-        elif _type == CommandType.UPDATE_USER_COMMAND.value:
-            """
-            ex: <@슬랙봇> --update_user --slack_id=a1b1c1d1 --avatar_url=https://blablac.com/abcd
-            """
-            if not mapped_attr.get('slack_id'):
-                return
-
-            await cls.update_user(
-                username=mapped_attr.get('name'),
-                slack_id=mapped_attr.get('slack_id'),
-                avatar_url=mapped_attr.get('avatar_url'),
-                department=mapped_attr.get('department')
-            )
-
-        elif _type == CommandType.SHOW_USER_COMMAND.value:
-            """
-            ex: <@슬랙봇> --hide_user --slack_id=a1b1c1d1
-            """
-            if not mapped_attr.get('slack_id'):
-                return
-
-            await cls.show_user(slack_id=mapped_attr.get('slack_id'))
-
-        elif _type == CommandType.HIDE_USER_COMMAND.value:
-            """
-            ex: <@슬랙봇> --show_user --slack_id=a1b1c1d1
-            """
-            if not mapped_attr.get('slack_id'):
-                return
-
-            await cls.hide_user(slack_id=mapped_attr.get('slack_id'))
-
-        elif _type == CommandType.SHOW_BEST_MEMBER_COMMAND.value:
-            """
-            이번달 베스트 멤버 리스트 추출
-            ex: <@슬랙봇> --show_best_member --year=12 --month=1
-            """
-            year = int(mapped_attr.get('year'))
-            month = int(mapped_attr.get('month'))
-
-            try:
-                best_users = await cls.get_this_month_best_user(year, month)
-                cls.send_best_user_list_to_slack(f"{year}년 {month}월 베스트 멤버", best_users)
-            except Exception as err:
-                print(err)
-                return
+        if asyncio.iscoroutinefunction(func):
+            await func(mapped_attr)
+        else:
+            func(mapped_attr)
 
     @classmethod
-    async def add_user(cls, username: str, slack_id: str, avatar_url: str, department: Optional[str] = None):
-        user = await cls._user_service.get_user(slack_id=slack_id)
+    async def add_user(cls, mapped_attr: dict):
+        if not mapped_attr.get('slack_id'):
+            return
+
+        user = await cls._user_service.get_user(slack_id=mapped_attr.get('slack_id'))
         if user:
             return
 
         user = User(
-            username=username,
-            slack_id=slack_id,
+            username=mapped_attr.get('name'),
+            slack_id=mapped_attr.get('slack_id'),
             my_reaction=settings.config.DAY_MAX_REACTION,
-            avatar_url=avatar_url,
-            department=department
+            avatar_url=mapped_attr.get('avatar_url'),
+            department=mapped_attr.get('department')
         )
         await cls._user_service.create_user(user=user)
 
     @classmethod
-    async def update_user(
-        cls,
-        slack_id: str,
-        username: Optional[str] = None,
-        avatar_url: Optional[str] = None,
-        department: Optional[str] = None
-    ):
-        user = await cls._user_service.get_user(slack_id=slack_id)
+    async def update_user(cls, mapped_attr: dict):
+        if not mapped_attr.get('slack_id'):
+            return
+
+        user = await cls._user_service.get_user(slack_id=mapped_attr.get('slack_id'))
         if not user:
             return
 
-        if username:
-            user.username = username
-        if avatar_url:
-            user.avatar_url = avatar_url
-        if department:
-            user.department = department
+        if mapped_attr.get('name'):
+            user.username = mapped_attr.get('name')
+        if mapped_attr.get('avatar_url'):
+            user.avatar_url = mapped_attr.get('avatar_url')
+        if mapped_attr.get('department'):
+            user.department = mapped_attr.get('department')
 
         await cls._user_service.update_user(user=user)
 
     @classmethod
-    async def hide_user(cls, slack_id: str):
-        user = await cls._user_service.get_user(slack_id=slack_id)
+    async def hide_user(cls, mapped_attr: dict):
+        if not mapped_attr.get('slack_id'):
+            return
+
+        user = await cls._user_service.get_user(slack_id=mapped_attr.get('slack_id'))
 
         if not user or user.is_display is False:
             return
@@ -173,8 +127,11 @@ class SlackService:
         await cls._user_service.update_user(user=user)
 
     @classmethod
-    async def show_user(cls, slack_id: str):
-        user = await cls._user_service.get_user(slack_id=slack_id)
+    async def show_user(cls, mapped_attr: dict):
+        if not mapped_attr.get('slack_id'):
+            return
+
+        user = await cls._user_service.get_user(slack_id=mapped_attr.get('slack_id'))
 
         if not user or user.is_display is True:
             return
@@ -213,12 +170,20 @@ class SlackService:
         return best_users
 
     @classmethod
-    def send_help_command(cls):
+    def send_help_command(cls, mapped_attr: dict):
         cls.send_slack_msg(get_help_msg())
 
     @classmethod
-    def send_best_user_list_to_slack(cls, title: str, best_users: dict):
-        cls.send_slack_msg(get_best_user_format(title, best_users))
+    async def send_best_user_list_to_slack(cls, mapped_attr: dict):
+        year = int(mapped_attr.get('year'))
+        month = int(mapped_attr.get('month'))
+
+        try:
+            best_users = await cls.get_this_month_best_user(year, month)
+            cls.send_slack_msg(get_best_user_format(f"{year}년 {month}월 베스트 멤버", best_users))
+        except Exception as err:
+            print(err)
+            return
 
     @staticmethod
     def send_slack_msg(blocks: list):

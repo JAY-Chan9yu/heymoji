@@ -89,7 +89,12 @@ def get_help_msg() -> list:
                         "[멤버 정보 업데이트]\n"
                         "ex: <@슬랙봇> --update_user --slack_id=슬랙ID --avatar_url=이미지URL\n\n"
                         "[이번달 베스트 멤버 리스트 추출]\n"
-                        "ex: <@슬랙봇> --show_best_member --year=2022 --month=1",
+                        "ex: <@슬랙봇> --show_best_member --year=2022 --month=1\n\n"
+                        "[유저 숨기기]\n"
+                        "ex: <@슬랙봇> --hide_user --slack_id=a1b1c1d1\n\n"
+                        "[유저 보이기]\n"
+                        "ex: <@슬랙봇> --show_user --slack_id=a1b1c1d1\n\n"
+
             }
         },
     ]
