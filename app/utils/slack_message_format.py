@@ -14,7 +14,7 @@ def get_best_user_format(title: str, best_users: dict) -> list:
             "block_id": "section567",
             "text": {
                 "type": "mrkdwn",
-                "text": f"이번 달 가장 많은 사랑을 받은 크루는?! *{best_users.get('❤️')}*\n:heart:"
+                "text": f"이번 달 가장 많은 사랑을 받은 크루는?! *{best_users.get('❤️', '🙈')}*\n:heart:"
             },
             "accessory": {
                 "type": "image",
@@ -27,7 +27,7 @@ def get_best_user_format(title: str, best_users: dict) -> list:
             "block_id": "section568",
             "text": {
                 "type": "mrkdwn",
-                "text": f"이번 달 개그맨 보다 더 많은 웃음을 준 크루는?! *{best_users.get('🤣')}*\n:kkkk: :기쁨:"
+                "text": f"이번 달 개그맨 보다 더 많은 웃음을 준 크루는?! *{best_users.get('🤣', '🙈')}*\n:kkkk: :기쁨:"
             },
             "accessory": {
                 "type": "image",
@@ -40,7 +40,7 @@ def get_best_user_format(title: str, best_users: dict) -> list:
             "block_id": "section569",
             "text": {
                 "type": "mrkdwn",
-                "text": f"이번 달 많은 크루를 도와준 천사 크루는?! *{best_users.get('🙏️')}*\n:pray: :기도:"
+                "text": f"이번 달 많은 크루를 도와준 천사 크루는?! *{best_users.get('🙏️', '🙈')}*\n:pray: :기도:"
             },
             "accessory": {
                 "type": "image",
@@ -53,7 +53,7 @@ def get_best_user_format(title: str, best_users: dict) -> list:
             "block_id": "section570",
             "text": {
                 "type": "mrkdwn",
-                "text": f"이번 달 가장 많은 이슈를 처리해 준 크루는?! *{best_users.get('👍')}*\n"
+                "text": f"이번 달 가장 많은 이슈를 처리해 준 크루는?! *{best_users.get('👍', '🙈')}*\n"
                         f":+1: :wow: :wonderfulk: :천재_개발자:"
             },
             "accessory": {
@@ -67,7 +67,7 @@ def get_best_user_format(title: str, best_users: dict) -> list:
             "block_id": "section571",
             "text": {
                 "type": "mrkdwn",
-                "text": f"이번 달 가장 많은 크루를 당황시킨 크루는?! *{best_users.get('👀️')}*\n:eye_shaking:"
+                "text": f"이번 달 가장 많은 크루를 당황시킨 크루는?! *{best_users.get('👀️', '🙈')}*\n:eye_shaking:"
             },
             "accessory": {
                 "type": "image",
@@ -84,17 +84,41 @@ def get_help_msg() -> list:
             "type": "section",
             "text": {
                 "type": "mrkdwn",
-                "text": "[멤버 등록]\n"
+                "text": "*[멤버 등록]*\n"
                         "ex: <@슬랙봇> --create_user --name=이름 --slack_id=슬랙ID --avatar_url=이미지URL --department=부서\n\n"
-                        "[멤버 정보 업데이트]\n"
+                        "*[멤버 정보 업데이트]*\n"
                         "ex: <@슬랙봇> --update_user --slack_id=슬랙ID --avatar_url=이미지URL\n\n"
-                        "[이번달 베스트 멤버 리스트 추출]\n"
+                        "*[이번달 베스트 멤버 리스트 추출]*\n"
                         "ex: <@슬랙봇> --show_best_member --year=2022 --month=1\n\n"
-                        "[유저 숨기기]\n"
+                        "*[유저 숨기기]*\n"
                         "ex: <@슬랙봇> --hide_user --slack_id=a1b1c1d1\n\n"
-                        "[유저 보이기]\n"
+                        "*[유저 보이기]*\n"
                         "ex: <@슬랙봇> --show_user --slack_id=a1b1c1d1\n\n"
 
+            }
+        },
+    ]
+
+
+def get_error_msg(err: str) -> list:
+    return [
+        {
+            "type": "section",
+            "text": {
+                "type": "mrkdwn",
+                "text": f"*오류가 생겼습니다!*\n관리자에게 문의해주세요 😢\n{err}"
+            }
+        },
+    ]
+
+
+def get_command_error_msg() -> list:
+    return [
+        {
+            "type": "section",
+            "text": {
+                "type": "mrkdwn",
+                "text": "*잘못된 명령어 입니다!*\n[@슬랙봇 --help] 확인해보세요!🤪"
             }
         },
     ]

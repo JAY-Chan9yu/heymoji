@@ -1,6 +1,16 @@
+from enum import Enum
 from typing import Optional
 
 from pydantic import BaseModel, Field
+
+
+class CommandType(Enum):
+    HELP_COMMAND = 'help'
+    CREATE_USER_COMMAND = 'create_user'
+    UPDATE_USER_COMMAND = 'update_user'
+    HIDE_USER_COMMAND = 'hide_user'
+    SHOW_USER_COMMAND = 'show_user'
+    SHOW_BEST_MEMBER_COMMAND = 'show_best_member'
 
 
 class SlackEvent(BaseModel):
@@ -17,6 +27,7 @@ class SlackMentionEvent(BaseModel):
     type: str = Field(title='리액션 타입')
     user: str = Field(title='리액션을 한 유저(slack_id)')
     text: Optional[str] = Field(title='app mention text', default=None)
+    channel: str = Field(title='이벤트 발생한 채널')
     event_ts: str
 
 

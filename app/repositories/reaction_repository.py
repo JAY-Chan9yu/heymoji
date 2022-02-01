@@ -129,7 +129,6 @@ class ReactionRepository:
                 count=1
             )
             q = insert(ReactionModel).values(reaction.__dict__)
-
         elif reaction:
             if is_increase is False and reaction.count == 0:
                 return

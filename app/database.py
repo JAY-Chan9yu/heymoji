@@ -41,7 +41,7 @@ class MysqlRepository:
                     f'mysql+pymysql://{settings.config.USERNAME}:{settings.config.PASSWORD}'
                     f'@{settings.config.HOST}:{settings.config.PORT}/{settings.config.DATABASE}',
                     connect_args={"check_same_thread": False}
-                )  # echo="debug" )
+                )  # echo="debug")
 
                 cls._client = scoped_session(sessionmaker(
                     autocommit=False, autoflush=False, bind=engine, class_=Session

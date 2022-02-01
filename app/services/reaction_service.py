@@ -68,6 +68,9 @@ class ReactionService:
 
     @classmethod
     async def get_user_received_emoji_info(cls, user: User, year: int, month: int) -> UserReceivedEmojiInfo:
+        """
+        유저가 받은 모든 이모지 정보를 저장한 객체를 리턴
+        """
         reactions = await cls._reaction_repository.get_month_reactions_by_user(user, year, month)
         user_received_reactions = UserReceivedEmojiInfo(username=user.username)
 

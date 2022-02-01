@@ -27,9 +27,9 @@ app = start_application()
 
 @app.on_event("startup")
 async def startup_event():
-    print("startup app")
+    print("startup EmojiRank")
 
 
 @app.on_event("shutdown")
 def shutdown_event():
-    print("shutdown app")
+    print("shutdown EmojiRank")
