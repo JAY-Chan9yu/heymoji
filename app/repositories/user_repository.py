@@ -2,22 +2,24 @@ from typing import Optional
 
 from sqlalchemy import func, and_, desc, select, insert, update
 
+from app.database import async_session_manager
 from app.domain.models.reaction_model import ReactionModel
 from app.domain.models.user_model import UserModel
 from app.domain.schemas.user_schema import User, UserDetailInfo
-from app.repositories.base_repository import BaseRepository, async_session_manager
 
 
-class UserRepository(BaseRepository):
+class UserRepository:
 
-    async def get_user(self, slack_id: str) -> Optional[User]:
+    @classmethod
+    async def get_user(cls, slack_id: str) -> Optional[User]:
         q = select(UserModel).filter(UserModel.slack_id == slack_id)
         async with async_session_manager() as session:
             results = await session.execute(q)
             for result in results:
                 return User(**result[0].__dict__)
 
-    async def get_users(self):
+    @classmethod
+    async def get_users(cls):
         users = []
         q = select(UserModel)
 
@@ -28,8 +30,9 @@ class UserRepository(BaseRepository):
 
         return users
 
+    @classmethod
     async def get_detail_user(
-        self,
+        cls,
         year: Optional[int] = None,
         month: Optional[int] = None,
         department: Optional[str] = None
@@ -71,18 +74,21 @@ class UserRepository(BaseRepository):
 
         return user_infos
 
-    async def create_user(self, user: User) -> User:
+    @classmethod
+    async def create_user(cls, user: User) -> User:
         q = insert(UserModel).values(user.__dict__)
         async with async_session_manager() as session:
             await session.execute(q)
         return user
 
-    async def update_user(self, user: User):
+    @classmethod
+    async def update_user(cls, user: User):
         q = update(UserModel).filter(UserModel.id == user.id).values(user.__dict__)
         async with async_session_manager() as session:
             await session.execute(q)
 
-    async def update_my_reaction(self, user: User, is_increase: bool):
+    @classmethod
+    async def update_my_reaction(cls, user: User, is_increase: bool):
         """내가 가지고 있는 reaction count 업데이트"""
         user.my_reaction += 1 if is_increase else -1
         q = update(UserModel).filter(UserModel.id == user.id).values({'my_reaction': user.my_reaction})

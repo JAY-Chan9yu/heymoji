@@ -4,15 +4,16 @@ from typing import List
 from sqlalchemy import select, update, insert
 from sqlalchemy.orm import joinedload
 
+from app.database import async_session_manager
 from app.domain.models.reaction_model import ReactionModel
 from app.domain.schemas.reaction_schema import ReceivedEmojiInfo, Reaction, UserReceivedEmojiInfo, ReactionMeta
 from app.domain.schemas.user_schema import User
-from app.repositories.base_repository import BaseRepository, async_session_manager
 
 
-class ReactionRepository(BaseRepository):
+class ReactionRepository:
 
-    async def get_my_reactions(self, slack_id: str, year: int, month: int) -> list:
+    @classmethod
+    async def get_my_reactions(cls, slack_id: str, year: int, month: int) -> list:
         q = select(ReactionModel).options(
             joinedload(ReactionModel.from_user),
             joinedload(ReactionModel.to_user),
@@ -33,7 +34,8 @@ class ReactionRepository(BaseRepository):
 
         return reactions
 
-    async def get_reactions(self, user_id: int, year: int, month: int) -> List:
+    @classmethod
+    async def get_reactions(cls, user_id: int, year: int, month: int) -> List:
         reaction_data = {}
 
         q = select(
@@ -69,7 +71,8 @@ class ReactionRepository(BaseRepository):
 
         return list(reaction_data.values())
 
-    async def get_current_reaction(self, reaction_type: str, received_user: User, send_user: User) -> ReactionMeta:
+    @classmethod
+    async def get_current_reaction(cls, reaction_type: str, received_user: User, send_user: User) -> ReactionMeta:
         now_date = datetime.now().date()
 
         q = select(
@@ -87,7 +90,8 @@ class ReactionRepository(BaseRepository):
             for result in results:
                 return ReactionMeta(**result[0].__dict__)
 
-    async def get_month_reactions_by_user(self, user: User, year: int, month: int) -> List[ReactionMeta]:
+    @classmethod
+    async def get_month_reactions_by_user(cls, user: User, year: int, month: int) -> List[ReactionMeta]:
         reactions = []
         q = select(
             ReactionModel
@@ -104,8 +108,9 @@ class ReactionRepository(BaseRepository):
 
         return reactions
 
+    @classmethod
     async def update_reaction(
-        self,
+        cls,
         reaction: ReactionMeta,
         reaction_type: str,
         received_user: User,
@@ -124,7 +129,6 @@ class ReactionRepository(BaseRepository):
                 count=1
             )
             q = insert(ReactionModel).values(reaction.__dict__)
-
         elif reaction:
             if is_increase is False and reaction.count == 0:
                 return
