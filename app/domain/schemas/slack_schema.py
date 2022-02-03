@@ -3,6 +3,8 @@ from typing import Optional
 
 from pydantic import BaseModel, Field
 
+from conf import settings
+
 
 class CommandType(Enum):
     HELP_COMMAND = 'help'
@@ -19,6 +21,7 @@ class SlackEvent(BaseModel):
     item_user: str = Field(title='리액션을 받은 유저(slack_id)')
     reaction: str = Field(title='리액션(이모지)')
     text: Optional[str] = Field(title='app mention text', default=None)
+    channel: Optional[str] = Field(title='이벤트 발생한 채널', default=settings.config.ERROR_CHANNEL)
     event_ts: str
     item: dict  # type, channel, ts
 
@@ -27,7 +30,7 @@ class SlackMentionEvent(BaseModel):
     type: str = Field(title='리액션 타입')
     user: str = Field(title='리액션을 한 유저(slack_id)')
     text: Optional[str] = Field(title='app mention text', default=None)
-    channel: str = Field(title='이벤트 발생한 채널')
+    channel: Optional[str] = Field(title='이벤트 발생한 채널', default=settings.config.ERROR_CHANNEL)
     event_ts: str
 
 

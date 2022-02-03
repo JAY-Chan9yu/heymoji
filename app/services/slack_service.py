@@ -26,6 +26,9 @@ class SlackService:
             return {"challenge": slack_event.challenge}
         else:
             user = await cls._user_service.get_user(slack_event.event.user)
+            # 등록되지 않은 유저
+            if user is None:
+                return
             await cls.slack_event_handler(event=slack_event.event, user=user)
 
     @classmethod

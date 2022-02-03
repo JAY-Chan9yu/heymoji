@@ -52,8 +52,8 @@ def slack_command_exception_handler():
                 return await func(*args, **kwargs)
             except Exception as err:
                 event = kwargs.get('event')
-                if not event:
+                if not event or event.channel is None:
                     return
-                send_slack_msg(channel=event.channel, blocks=get_error_msg(str(err)))
+                send_slack_msg(channel=settings.config.ERROR_CHANNEL, blocks=get_error_msg(str(err)))
         return _inner
     return wrapper
