@@ -15,6 +15,8 @@ class BaseConfig(BaseSettings):
     BOT_NAME: str = Field(env="BOT_NAME")
     BEST_TYPES: list = Field(env="BEST_TYPES", default=[])
 
+    RANK_URL: str = Field(env="RANK_URL")
+
     class Config:
         env_file = ".env"
         env_file_encoding = 'utf-8'

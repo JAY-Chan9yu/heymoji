@@ -75,7 +75,14 @@ def get_best_user_format(title: str, best_users: dict) -> list:
                 "image_url": "https://d2u3dcdbebyaiu.cloudfront.net/uploads/atch_img/693/6ebb2cf8ed8a3f6cdebe2f6aedc640e6.jpeg",
                 "alt_text": "Haunted hotel image"
             }
-        }
+        },
+        {
+            "type": "section",
+            "text": {
+                "type": "mrkdwn",
+                "text": f"📊 통계 링크: {settings.config.RANK_URL or '링크를 설정해주세요!'}"
+            }
+        },
     ]
 
 
