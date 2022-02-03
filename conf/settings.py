@@ -11,7 +11,7 @@ class BaseConfig(BaseSettings):
     DAY_MAX_REACTION: int = Field(env="DAY_MAX_REACTION", default=1000)
     REACTION_LIST: list = Field(env="REACTION_LIST", default=['heart'])
     SLACK_TOKEN: str = Field(env="SLACK_TOKEN")
-    SLACK_CHANNEL: str = Field(env="SLACK_CHANNEL")
+    BOT_NAME: str = Field(env="BOT_NAME")
     BEST_TYPES: list = Field(env="BEST_TYPES", default=[])
 
     class Config:

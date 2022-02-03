@@ -40,7 +40,7 @@ def mapping_slack_command_to_dict(event: SlackMentionEvent) -> (CommandType, dic
 def send_slack_msg(channel: str, blocks: list):
     requests.post(
         "https://slack.com/api/chat.postMessage",
-        headers={"Authorization": "Bearer " + settings.config.SLACK_TOKEN, "Content-Type": "application/json"},
+        headers={"Authorization": f"Bearer {settings.config.SLACK_TOKEN}", "Content-Type": "application/json"},
         data=json.dumps({"channel": channel, "blocks": blocks})
     )
 

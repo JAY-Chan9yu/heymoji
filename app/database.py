@@ -15,7 +15,7 @@ async_engine = create_async_engine(
 )
 
 
-class MysqlRepository:
+class MysqlConnectionManager:
     """
     todo: 공통된 session 사용시 AsyncSession 에서 refresh 를 하여 업데이트된 데이터를 갱신하는데,
           잘 되지 않아 Context Manager 로 DB 접근시 새로운 세션을 생성하여 사용.
@@ -61,3 +61,4 @@ async def async_session_manager():
         await session.rollback()
     finally:
         await session.close()
+        # await async_engine.dispose()

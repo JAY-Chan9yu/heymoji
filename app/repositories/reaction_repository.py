@@ -58,16 +58,15 @@ class ReactionRepository:
             for result in results:
                 reaction = Reaction(**result[0].__dict__)
                 from_user_name = reaction.from_user.username
+                reaction_emoji_info = ReceivedEmojiInfo(type=reaction.type, count=reaction.count)
 
                 if not reaction_data.get(from_user_name):
                     reaction_data[from_user_name] = UserReceivedEmojiInfo(
                         username=from_user_name,
-                        emoji=[ReceivedEmojiInfo(type=reaction.type, count=reaction.count)]
+                        emoji=[reaction_emoji_info]
                     )
                 else:
-                    reaction_data[from_user_name].emoji.append(
-                        ReceivedEmojiInfo(type=reaction.type, count=reaction.count)
-                    )
+                    reaction_data[from_user_name].emoji.append(reaction_emoji_info)
 
         return list(reaction_data.values())
 

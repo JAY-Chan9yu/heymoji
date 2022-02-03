@@ -78,10 +78,7 @@ class ReactionService:
         for reaction in reactions:
             converted_type = cls.change_str_to_emoji(reaction.type)
             if not emoji_counts.get(converted_type):
-                emoji_counts[converted_type] = ReceivedEmojiInfo(
-                    type=converted_type,
-                    count=reaction.count
-                )
+                emoji_counts[converted_type] = ReceivedEmojiInfo(type=converted_type, count=reaction.count)
             else:
                 emoji_counts[converted_type].count += reaction.count
 
