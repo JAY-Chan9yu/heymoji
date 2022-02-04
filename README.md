@@ -113,7 +113,7 @@ $PYTHON_PATH $SCRIPT_PATH
 # Slack Bot 🤖
 <img src="https://user-images.githubusercontent.com/24591259/114943304-bf743a80-9e80-11eb-85ad-30cb26591ea3.png" width="400px"/>
 
-https://api.slack.com/apps에 접속하여 create app 버튼을 클릭한 후, <br/>
+https://api.slack.com/apps 에 접속하여 create app 버튼을 클릭한 후, <br/>
 원하는 ``workspace``에 ``app``을 생성해주세요!
 
 
