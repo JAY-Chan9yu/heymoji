@@ -72,4 +72,4 @@ class ReceivedEmojiInfo(BaseModel):
 
 class UserReceivedEmojiInfo(BaseModel):
     username: str
-    emoji: List[ReceivedEmojiInfo] = []
+    emoji_infos: List[ReceivedEmojiInfo] = []

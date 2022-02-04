@@ -45,10 +45,10 @@ class ReactionService(GenericService):
             if not reaction_data.get(from_user_name):
                 reaction_data[from_user_name] = UserReceivedEmojiInfo(
                     username=from_user_name,
-                    emoji=[reaction_emoji_info]
+                    emoji_infos=[reaction_emoji_info]
                 )
             else:
-                reaction_data[from_user_name].emoji.append(reaction_emoji_info)
+                reaction_data[from_user_name].emoji_infos.append(reaction_emoji_info)
 
         return list(reaction_data.values())
 
