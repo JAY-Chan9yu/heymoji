@@ -58,7 +58,7 @@ class ReactionService(GenericService):
         emoji: str,
         received_user_id: int,
         send_user_id: int
-    ) -> Reaction:
+    ) -> Optional[Reaction]:
         """
         보낸, 받은 유저 ID, Type 과 일치하는 Reaction 을 반환한다.
         """
@@ -83,7 +83,7 @@ class ReactionService(GenericService):
             else:
                 emoji_counts[converted_emoji].count += reaction.count
 
-        user_received_emoji_info.emoji = list(emoji_counts.values())
+        user_received_emoji_info.emoji_infos = list(emoji_counts.values())
         return user_received_emoji_info
 
     @classmethod

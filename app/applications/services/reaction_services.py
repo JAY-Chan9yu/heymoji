@@ -43,18 +43,19 @@ class ReactionServiceImpl(ReactionService):
             return
 
         reaction = await cls.get_reaction_by_type(emoji, received_user.id, send_user.id)
-        if not reaction and reaction_type == ReactionType.ADDED_REACTION.value:
-            now = datetime.datetime.now()
-            await cls.create_reaction({
-                'year': now.year,
-                'month': now.month,
-                'emoji': emoji,
-                'to_user_id': received_user.id,
-                'from_user_id': send_user.id,
-                'count': 1
-            })
-
-        await cls.update_reaction_count(reaction, reaction_type)
+        if reaction is None:
+            if reaction_type == ReactionType.ADDED_REACTION.value:
+                now = datetime.datetime.now()
+                await cls.create_reaction({
+                    'year': now.year,
+                    'month': now.month,
+                    'emoji': emoji,
+                    'to_user_id': received_user.id,
+                    'from_user_id': send_user.id,
+                    'count': 1
+                })
+        else:
+            await cls.update_reaction_count(reaction, reaction_type)
 
     @classmethod
     async def get_this_month_best_user(cls, year: int, month: int) -> dict:
@@ -74,7 +75,9 @@ class ReactionServiceImpl(ReactionService):
 
             for user_received_emoji_info in user_received_emoji_infos:
                 try:
-                    emoji_info = next(filter(lambda x: x.emoji == best_type['emoji'], user_received_emoji_info.emoji))
+                    emoji_info = next(filter(
+                        lambda x: x.emoji == best_type['emoji'], user_received_emoji_info.emoji_infos
+                    ))
 
                     if max_emoji_count < emoji_info.count:
                         max_emoji_count = emoji_info.count
