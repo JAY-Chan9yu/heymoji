@@ -15,7 +15,7 @@ class BaseConfig(BaseSettings):
     BOT_NAME: str = Field(env="BOT_NAME")
     BEST_TYPES: list = Field(env="BEST_TYPES", default=[])
 
-    RANK_URL: str = Field(env="RANK_URL")
+    RANK_URL: str = Field(env="RANK_URL", default="")
 
     class Config:
         env_file = ".env"

@@ -51,14 +51,15 @@ class MysqlConnectionManager:
 
 
 @asynccontextmanager
-async def async_session_manager():
+async def async_session_manager() -> AsyncSession:
     session = AsyncSession(bind=async_engine, expire_on_commit=True)
 
     try:
         yield session
         await session.commit()
-    except:
+    except Exception as err:
         await session.rollback()
+        print(err)
     finally:
         await session.close()
         # await async_engine.dispose()
