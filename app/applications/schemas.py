@@ -63,3 +63,7 @@ class SlackChallengeHook(BaseModel):
     token: str
     challenge: str
     type: str
+
+
+class SlackChallengeHookResponse(BaseModel):
+    challenge: str

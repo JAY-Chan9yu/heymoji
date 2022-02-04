@@ -1,7 +1,7 @@
 from starlette.requests import Request
 
-from app.domain.schemas.reaction_schema import ReactionType
-from app.domain.schemas.slack_schema import SlackEventHook, SlackChallengeHook, SlackMentionHook
+from app.applications.schemas import SlackChallengeHook, SlackMentionHook, SlackEventHook
+from app.domains.reactions.entities import ReactionType
 
 
 async def get_slack_event(request: Request):

@@ -3,7 +3,7 @@ from typing import Callable, Any
 
 import requests
 
-from app.domain.schemas.slack_schema import CommandType, SlackMentionEvent
+from app.applications.schemas import SlackMentionEvent, CommandType
 from app.utils.slack_message_format import get_error_msg
 from conf import settings
 
