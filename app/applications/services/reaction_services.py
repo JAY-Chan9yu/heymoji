@@ -74,7 +74,7 @@ class ReactionServiceImpl(ReactionService):
 
             for user_received_emoji_info in user_received_emoji_infos:
                 try:
-                    emoji_info = next(filter(lambda x: x.type == best_type['emoji'], user_received_emoji_info.emoji))
+                    emoji_info = next(filter(lambda x: x.emoji == best_type['emoji'], user_received_emoji_info.emoji))
 
                     if max_emoji_count < emoji_info.count:
                         max_emoji_count = emoji_info.count
