@@ -40,7 +40,7 @@ class ReactionService(GenericService):
 
         for reaction in reactions:
             from_user_name = reaction.from_user.username
-            reaction_emoji_info = ReceivedEmojiInfo(type=reaction.type, count=reaction.count)
+            reaction_emoji_info = ReceivedEmojiInfo(emoji=reaction.emoji, count=reaction.count)
 
             if not reaction_data.get(from_user_name):
                 reaction_data[from_user_name] = UserReceivedEmojiInfo(
@@ -55,7 +55,7 @@ class ReactionService(GenericService):
     @classmethod
     async def get_reaction_by_type(
         cls,
-        reaction_type: str,
+        emoji: str,
         received_user_id: int,
         send_user_id: int
     ) -> Reaction:
@@ -63,7 +63,7 @@ class ReactionService(GenericService):
         보낸, 받은 유저 ID, Type 과 일치하는 Reaction 을 반환한다.
         """
         return await cls._repository().get_reaction_by_type(
-            reaction_type=reaction_type,
+            emoji=emoji,
             received_user_id=received_user_id,
             send_user_id=send_user_id
         )
@@ -77,11 +77,11 @@ class ReactionService(GenericService):
 
         emoji_counts = {}
         for reaction in reactions:
-            converted_type = cls.change_str_to_emoji(reaction.type)
-            if not emoji_counts.get(converted_type):
-                emoji_counts[converted_type] = ReceivedEmojiInfo(type=converted_type, count=reaction.count)
+            converted_emoji = cls.change_str_to_emoji(reaction.emoji)
+            if not emoji_counts.get(converted_emoji):
+                emoji_counts[converted_emoji] = ReceivedEmojiInfo(type=converted_emoji, count=reaction.count)
             else:
-                emoji_counts[converted_type].count += reaction.count
+                emoji_counts[converted_emoji].count += reaction.count
 
         user_received_emoji_info.emoji = list(emoji_counts.values())
         return user_received_emoji_info
@@ -90,6 +90,10 @@ class ReactionService(GenericService):
     async def update_reaction_count(cls, reaction: Reaction, reaction_type: str):
         reaction.update_count(reaction_type)
         await cls._repository().update(reaction)
+
+    @classmethod
+    async def create_reaction(cls, attr: dict):
+        await cls._repository().insert(Reaction(**attr))
 
     @classmethod
     async def count_reaction_data(
@@ -102,10 +106,10 @@ class ReactionService(GenericService):
         reactions = await cls._repository().get_by_slack_id_and_date(slack_id, year, month)
 
         for reaction in reactions:
-            if not reaction_data.get(cls.change_str_to_emoji(reaction.type)):
-                reaction_data[cls.change_str_to_emoji(reaction.type)] = reaction.count
+            if not reaction_data.get(cls.change_str_to_emoji(reaction.emoji)):
+                reaction_data[cls.change_str_to_emoji(reaction.emoji)] = reaction.count
             else:
-                reaction_data[cls.change_str_to_emoji(reaction.type)] += reaction.count
+                reaction_data[cls.change_str_to_emoji(reaction.emoji)] += reaction.count
 
         return reaction_data
 

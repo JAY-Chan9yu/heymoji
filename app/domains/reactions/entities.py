@@ -17,7 +17,7 @@ class ReactionType(Enum):
 class Reaction(AggregateRoot):
     year: int = Field(title='년')
     month: int = Field(title='월')
-    type: str = Field(title='이모지 타입')
+    emoji: str = Field(title='이모지')
     count: int = Field(title='이모지 카운트')
     to_user_id: int = Field(title='리액션 받은 사람 ID')
     from_user_id: int = Field(title='리액션 준 사람 ID')
@@ -34,8 +34,15 @@ class Reaction(AggregateRoot):
 
         super().__init__(**kwargs)
 
-    def update_count(self, event_type: str):
-        is_increase = True if event_type == ReactionType.ADDED_REACTION.value else False
+    def entity_to_data(self) -> dict:
+        data = self.__dict__
+        data.pop('id')
+        data.pop('to_user')
+        data.pop('from_user')
+        return data
+
+    def update_count(self, reaction_type: str):
+        is_increase = True if reaction_type == ReactionType.ADDED_REACTION.value else False
 
         if is_increase:
             self.increase_count()
@@ -55,11 +62,11 @@ class ReactionCreate(BaseModel):
     month: int
     to_user: int
     from_user: int
-    type: str
+    emoji: str
 
 
 class ReceivedEmojiInfo(BaseModel):
-    type: str
+    emoji: str
     count: int
 
 

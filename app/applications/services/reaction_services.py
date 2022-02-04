@@ -1,5 +1,8 @@
+import datetime
+
 from app.applications.schemas import SlackEvent
 from app.applications.services.user_services import UserServiceImpl
+from app.domains.reactions.entities import ReactionType
 from app.domains.reactions.services import ReactionService
 from app.domains.users.entities import User
 
@@ -18,27 +21,40 @@ class ReactionServiceImpl(ReactionService):
             return
 
         await cls._user_service_impl.update_my_reaction(user, False)
-        await cls.update_reaction_of_to_user(
-            reaction_type=event.reaction,
+        await cls.update_or_create_reaction_of_to_user(
+            reaction_type=event.type,
+            emoji=event.reaction,
             received_user_slack_id=event.item_user,
             send_user_slack_id=event.user,
         )
 
     @classmethod
-    async def update_reaction_of_to_user(
+    async def update_or_create_reaction_of_to_user(
         cls,
         reaction_type: str,
+        emoji: str,
         received_user_slack_id: str,
         send_user_slack_id: str,
     ):
-        send_user = await cls.repository.get_user(send_user_slack_id)
-        received_user = await cls.repository.get_user(received_user_slack_id)
+        send_user = await cls._user_service_impl.get_by_slack_id(send_user_slack_id)
+        received_user = await cls._user_service_impl().get_by_slack_id(received_user_slack_id)
 
         if send_user is None or received_user is None:
             return
 
-        reaction = await cls.get_reaction_by_type(reaction_type, received_user.id, send_user.id)
-        return await cls.update_reaction_count(reaction, reaction_type)
+        reaction = await cls.get_reaction_by_type(emoji, received_user.id, send_user.id)
+        if not reaction and reaction_type == ReactionType.ADDED_REACTION.value:
+            now = datetime.datetime.now()
+            await cls.create_reaction({
+                'year': now.year,
+                'month': now.month,
+                'emoji': emoji,
+                'to_user_id': received_user.id,
+                'from_user_id': send_user.id,
+                'count': 1
+            })
+
+        await cls.update_reaction_count(reaction, reaction_type)
 
     @classmethod
     async def get_this_month_best_user(cls, year: int, month: int) -> dict:

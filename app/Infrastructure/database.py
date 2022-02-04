@@ -11,8 +11,14 @@ Base = declarative_base()
 async_engine = create_async_engine(
     f'mysql+aiomysql://{settings.config.USERNAME}:{settings.config.PASSWORD}'
     f'@{settings.config.HOST}:{settings.config.PORT}/{settings.config.DATABASE}',
-    future=True, echo=True
+    future=True,
+    # echo=True
 )
+engine = create_engine(
+    f'mysql+pymysql://{settings.config.USERNAME}:{settings.config.PASSWORD}'
+    f'@{settings.config.HOST}:{settings.config.PORT}/{settings.config.DATABASE}',
+    # connect_args={"check_same_thread": False}
+)  # echo="debug")
 
 
 class MysqlConnectionManager:
@@ -35,14 +41,7 @@ class MysqlConnectionManager:
                 # todo: asyncio scoped session 가 필요한가?
                 # https://docs.sqlalchemy.org/en/14/orm/extensions/asyncio.html#using-asyncio-scoped-session
                 cls._client = AsyncSession(bind=async_engine, expire_on_commit=False)
-
             else:
-                engine = create_engine(
-                    f'mysql+pymysql://{settings.config.USERNAME}:{settings.config.PASSWORD}'
-                    f'@{settings.config.HOST}:{settings.config.PORT}/{settings.config.DATABASE}',
-                    connect_args={"check_same_thread": False}
-                )  # echo="debug")
-
                 cls._client = scoped_session(sessionmaker(
                     autocommit=False, autoflush=False, bind=engine, class_=Session
                 ))
