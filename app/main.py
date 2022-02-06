@@ -1,8 +1,8 @@
 from fastapi import FastAPI
 from starlette.middleware.cors import CORSMiddleware
 
-from app.routers.slack import slack_router
-from app.routers.users import user_router
+from app.api.routers.slack import slack_router
+from app.api.routers.users import user_router
 
 
 def start_application():

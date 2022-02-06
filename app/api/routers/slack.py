@@ -1,7 +1,7 @@
 from fastapi import Depends, APIRouter
 
 from app.applications.services.slack_services import SlackService
-from app.dependency.requests import get_slack_event
+from app.api.dependency.requests import get_slack_event
 
 slack_router = APIRouter()
 
