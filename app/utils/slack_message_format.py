@@ -93,15 +93,15 @@ def get_help_msg() -> list:
         "text": {
             "type": "mrkdwn",
             "text": "*[멤버 등록]*\n"
-                    f"ex: <@{bot_name}> --create_user --name=이름 --slack_id=슬랙ID --avatar_url=이미지URL --department=부서\n\n"
+                    f"<@{bot_name}> --create_user --name=이름 --slack_id=슬랙ID --avatar_url=이미지URL --department=부서\n\n"
                     "*[멤버 정보 업데이트]*\n"
-                    f"ex: <@{bot_name}> --update_user --slack_id=슬랙ID --avatar_url=이미지URL\n\n"
+                    f"<@{bot_name}> --update_user --slack_id=슬랙ID --avatar_url=이미지URL\n\n"
                     "*[이번달 베스트 멤버 리스트 추출]*\n"
-                    f"ex: <@{bot_name}> --show_best_member --year=2022 --month=1\n\n"
+                    f"<@{bot_name}> --show_best_member --year=2022 --month=1\n\n"
                     "*[유저 숨기기]*\n"
-                    f"ex: <@{bot_name}> --hide_user --slack_id=a1b1c1d1\n\n"
+                    f"<@{bot_name}> --hide_user --slack_id=슬랙ID\n\n"
                     "*[유저 보이기]*\n"
-                    f"ex: <@{bot_name}> --show_user --slack_id=a1b1c1d1\n\n"
+                    f"<@{bot_name}> --show_user --slack_id=슬랙ID\n\n"
         }
     }]
 
@@ -111,7 +111,8 @@ def get_error_msg(err: str) -> list:
         "type": "section",
         "text": {
             "type": "mrkdwn",
-            "text": f"*오류가 생겼습니다!*\n관리자에게 문의해주세요 😢\n{err}"
+            "text": f"*오류가 생겼습니다!*\n"
+                    f"관리자에게 문의해주세요 😢\n{err}"
         }
     }]
 
@@ -121,6 +122,7 @@ def get_command_error_msg() -> list:
         "type": "section",
         "text": {
             "type": "mrkdwn",
-            "text": "*잘못된 명령어 입니다!*\n[@슬랙봇 --help] 확인해보세요!🤪"
+            "text": f"*잘못된 명령어 입니다!*\n"
+                    f"[<@{settings.config.BOT_NAME}> --help] 확인해보세요!🤪"
         }
     }]

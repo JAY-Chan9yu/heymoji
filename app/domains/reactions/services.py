@@ -1,7 +1,7 @@
 import datetime
 from typing import List, Optional
 
-from app.domains.reactions.entities import Reaction, ReceivedEmojiInfo, UserReceivedEmojiInfo
+from app.domains.reactions.entities import Reaction, ReceivedEmojiInfo, UserReceivedEmojiInfo, SlackEventType
 from app.domains.reactions.repositories import ReactionRepository
 from conf import settings
 from seed_work.services import GenericService
@@ -53,7 +53,7 @@ class ReactionService(GenericService):
         return list(reaction_data.values())
 
     @classmethod
-    async def get_reaction_by_type(
+    async def get_reaction_by_emoji(
         cls,
         emoji: str,
         received_user_id: int,
@@ -62,7 +62,7 @@ class ReactionService(GenericService):
         """
         보낸, 받은 유저 ID, Type 과 일치하는 Reaction 을 반환한다.
         """
-        return await cls._repository().get_reaction_by_type(
+        return await cls._repository().get_reaction_by_emoji(
             emoji=emoji,
             received_user_id=received_user_id,
             send_user_id=send_user_id
@@ -87,13 +87,41 @@ class ReactionService(GenericService):
         return user_received_emoji_info
 
     @classmethod
-    async def update_reaction_count(cls, reaction: Reaction, reaction_type: str):
-        reaction.update_count(reaction_type)
+    async def update_or_create_reaction(
+        cls,
+        reaction: Reaction,
+        event_type: SlackEventType,
+        emoji: str,
+        send_user_id: int,
+        received_user_id: int
+    ) -> bool:
+        is_updated = True
+
+        if reaction is None:
+            if event_type == SlackEventType.ADDED_REACTION:
+                now = datetime.datetime.now()
+                await cls.create_reaction(
+                    year=now.year,
+                    month=now.month,
+                    emoji=emoji,
+                    to_user_id=received_user_id,
+                    from_user_id=send_user_id
+                )
+            else:
+                is_updated = False
+        else:
+            await cls.update_reaction_count(reaction, event_type)
+
+        return is_updated
+
+    @classmethod
+    async def update_reaction_count(cls, reaction: Reaction, event_type: SlackEventType):
+        reaction.update_count(event_type)
         await cls._repository().update(reaction)
 
     @classmethod
-    async def create_reaction(cls, attr: dict):
-        await cls._repository().insert(Reaction(**attr))
+    async def create_reaction(cls, **kwargs):
+        await cls._repository().insert(Reaction(**kwargs))
 
     @classmethod
     async def count_reaction_data(

@@ -5,6 +5,6 @@ from pydantic import BaseModel
 
 class UserCreateSchema(BaseModel):
     slack_id: str
-    username: str
+    name: str
     avatar_url: Optional[str]
     department: Optional[str]

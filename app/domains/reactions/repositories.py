@@ -79,7 +79,7 @@ class ReactionRepository(GenericRepository):
 
         return reactions
 
-    async def get_reaction_by_type(
+    async def get_reaction_by_emoji(
         self,
         emoji: str,
         received_user_id: int,

@@ -7,7 +7,7 @@ from app.domains.users.entities import User
 from seed_work.entities import AggregateRoot
 
 
-class ReactionType(Enum):
+class SlackEventType(Enum):
     REMOVED_REACTION = 'reaction_removed'
     ADDED_REACTION = 'reaction_added'
     APP_MENTION_REACTION = 'app_mention'
@@ -18,7 +18,7 @@ class Reaction(AggregateRoot):
     year: int = Field(title='년')
     month: int = Field(title='월')
     emoji: str = Field(title='이모지')
-    count: int = Field(title='이모지 카운트')
+    count: int = Field(title='이모지 카운트', default=1)
     to_user_id: int = Field(title='리액션 받은 사람 ID')
     from_user_id: int = Field(title='리액션 준 사람 ID')
 
@@ -41,12 +41,13 @@ class Reaction(AggregateRoot):
         data.pop('from_user')
         return data
 
-    def update_count(self, reaction_type: str):
-        is_increase = True if reaction_type == ReactionType.ADDED_REACTION.value else False
+    def update_count(self, event_type: SlackEventType):
+        if event_type not in [SlackEventType.ADDED_REACTION, SlackEventType.REMOVED_REACTION]:
+            return
 
-        if is_increase:
+        if event_type == SlackEventType.ADDED_REACTION:
             self.increase_count()
-        else:
+        elif event_type == SlackEventType.REMOVED_REACTION:
             self.decrease_count()
 
     def decrease_count(self):
@@ -55,14 +56,6 @@ class Reaction(AggregateRoot):
 
     def increase_count(self):
         self.count += 1
-
-
-class ReactionCreate(BaseModel):
-    year: int
-    month: int
-    to_user: int
-    from_user: int
-    emoji: str
 
 
 class ReceivedEmojiInfo(BaseModel):

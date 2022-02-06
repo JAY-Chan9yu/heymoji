@@ -1,7 +1,17 @@
+from enum import Enum
+
 from pydantic import BaseSettings, Field
 
 
+class EmojiRankEnv(Enum):
+    PROD = 'prod'
+    STAGE = 'stage'
+    DEV = 'dev'
+
+
 class BaseConfig(BaseSettings):
+    ENV: str = Field(env="ENV", default=EmojiRankEnv.DEV.value)
+
     HOST: str = Field(env="HOST", default="127.0.0.1")
     PORT: int = Field(env="PORT", default="3306")
     DATABASE: str = Field(env="DATABASE", default="emojirank_db")

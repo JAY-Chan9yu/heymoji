@@ -56,18 +56,17 @@ class UserRepository(GenericRepository):
         async with async_session_manager() as session:
             await session.execute(q)
 
-    async def get_detail_info(
-        self,
-        year: Optional[int] = None,
-        month: Optional[int] = None,
-        department: Optional[str] = None
-    ) -> List[UserDetailInfo]:
+    async def get_detail_info(self, **kwargs) -> List[UserDetailInfo]:
         """
         유저가 받은 리액션 상세 정보 엔티티를 반환
         """
         from app.domains.reactions.repositories import ReactionModel
 
         user_infos = []
+        year = kwargs.get('year')
+        month = kwargs.get('month')
+        department = kwargs.get('department')
+
         # Reaction Sub Query
         sub = select(ReactionModel.to_user_id, func.sum(ReactionModel.count)).group_by(ReactionModel.to_user_id)
 

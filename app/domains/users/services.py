@@ -1,5 +1,5 @@
 from contextlib import asynccontextmanager
-from typing import Optional
+from typing import Optional, List
 
 from app.domains.users.entities import User
 from app.domains.users.repositories import UserRepository
@@ -9,7 +9,7 @@ class UserService:
     _user_repository = UserRepository
 
     @classmethod
-    async def get_by_slack_id(cls, slack_id: str):
+    async def get_by_slack_id(cls, slack_id: str) -> Optional[User]:
         return await cls._user_repository().get_by_slack_id(slack_id)
 
     @classmethod
@@ -17,16 +17,11 @@ class UserService:
         return await cls._user_repository().get_by_id(_id)
 
     @classmethod
-    async def get_detail_user(
-        cls,
-        year: Optional[int] = None,
-        month: Optional[int] = None,
-        department: Optional[str] = None
-    ):
-        return await cls._user_repository().get_detail_info(year, month, department)
+    async def get_detail_user(cls, **kwargs):
+        return await cls._user_repository().get_detail_info(**kwargs)
 
     @classmethod
-    async def get_all_users(cls):
+    async def get_all_users(cls) -> List[User]:
         return await cls._user_repository().get_all_users()
 
     @classmethod
@@ -68,6 +63,9 @@ class UserService:
 
 @asynccontextmanager
 async def user_check_manager(attr):
+    if not attr.get('slack_id'):
+        return
+
     user = await UserService.get_by_slack_id(slack_id=attr['slack_id'])
 
     try:
