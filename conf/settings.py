@@ -11,6 +11,7 @@ class EmojiRankEnv(Enum):
 
 class BaseConfig(BaseSettings):
     ENV: str = Field(env="ENV", default=EmojiRankEnv.DEV.value)
+    ALLOW_ORIGINS: list = Field(env="ALLOW_ORIGINS", default=['*'])
 
     HOST: str = Field(env="HOST", default="127.0.0.1")
     PORT: int = Field(env="PORT", default="3306")

@@ -3,6 +3,7 @@ from starlette.middleware.cors import CORSMiddleware
 
 from app.api.routers.slack import slack_router
 from app.api.routers.users import user_router
+from conf import settings
 
 
 def start_application():
@@ -10,7 +11,7 @@ def start_application():
 
     _app.add_middleware(
         CORSMiddleware,
-        allow_origins=['*'],
+        allow_origins=settings.config.ALLOW_ORIGINS,
         allow_credentials=True,
         allow_methods=["*"],
         allow_headers=["*"],
