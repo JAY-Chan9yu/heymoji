@@ -93,6 +93,7 @@ def get_help_msg() -> list:
         "text": {
             "type": "mrkdwn",
             "text": "🤖 저에게 DM을 보내셔도 아래 명령어들을 실행 할 수 있어요!\n"
+                    "아래 명령어를 복사해서 사용하실 경우 코드블럭을 제거하시고 사용하세요~\n"
                     "```"
                     f"🏆 이모지 랭킹 URL\n"
                     f"{settings.config.RANK_URL or '링크를 설정해주세요!'}\n\n"

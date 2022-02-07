@@ -2,7 +2,7 @@ import asyncio
 from typing import Union, Optional, Callable
 
 from app.applications.schemas import SlackEventHook, SlackMentionHook, SlackChallengeHook, SlackEvent, \
-    SlackMentionEvent, CommandType, SlackChallengeHookResponse
+    SlackMentionEvent, CommandType, SlackChallengeHookResponse, SlackBotDirectMessageHook
 from app.applications.services.reaction_services import ReactionAppService
 from app.applications.services.user_services import UserAppService
 from app.domains.reactions.entities import SlackEventType
@@ -18,10 +18,14 @@ class SlackService:
     @classmethod
     async def slack_web_hook_handler(
         cls,
-        slack_event: Union[SlackEventHook, SlackMentionHook, SlackChallengeHook]
+        slack_event: Union[SlackEventHook, SlackMentionHook, SlackChallengeHook, SlackBotDirectMessageHook]
     ) -> Optional[SlackChallengeHookResponse]:
+
+        # 슬랙봇 DM 예외처리
+        if type(slack_event) == SlackBotDirectMessageHook:
+            return
         # 슬랙 웹훅 인증
-        if type(slack_event) == SlackChallengeHook:
+        elif type(slack_event) == SlackChallengeHook:
             return SlackChallengeHookResponse(challenge=slack_event.challenge)
         else:
             await cls.slack_event_handler(event=slack_event.event)
@@ -32,16 +36,16 @@ class SlackService:
         """
         슬랙 이벤트를 받아서 type 별로 처리하는 함수
         """
-        slack_event = SlackEventType(event.type)
+        slack_event_type = SlackEventType(event.type)
 
         # 이모지 업데이트
-        if slack_event in [SlackEventType.ADDED_REACTION, SlackEventType.REMOVED_REACTION]:
+        if slack_event_type in [SlackEventType.ADDED_REACTION, SlackEventType.REMOVED_REACTION]:
             if event.item_user == event.user or event.reaction not in settings.config.REACTION_LIST:
                 return
             await cls._reaction_app_service.update_sending_reaction(event)
 
         # 앱 맨션, 메세지 핸들링
-        elif slack_event in [SlackEventType.APP_MENTION_REACTION, SlackEventType.APP_MESSAGE]:
+        elif slack_event_type in [SlackEventType.APP_MENTION_REACTION, SlackEventType.APP_MESSAGE]:
             await cls.mention_command_handler(event)
 
     @classmethod
@@ -57,8 +61,9 @@ class SlackService:
         cmd, mapped_attr = mapping_slack_command_to_dict(event)
         func: Callable[[dict, SlackMentionEvent], None] = mention_functions.get(cmd)
 
+        # 존재하지 않는 명령어인 경우
         if func is None:
-            send_slack_msg(channel=event.channel, blocks=get_command_error_msg())
+            # send_slack_msg(channel=event.channel, blocks=get_command_error_msg())
             return
 
         kwargs = {'mapped_attr': mapped_attr, 'event': event}

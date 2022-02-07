@@ -34,6 +34,11 @@ class SlackMentionEvent(BaseModel):
     event_ts: str
 
 
+class SlackBotEvent(SlackMentionEvent):
+    """slack bot direct message event"""
+    bot_profile: Optional[dict] = None
+
+
 class BaseSlackEventHook(BaseModel):
     token: str
     team_id: str = Field(title='워크스페이스 아이디')
@@ -54,6 +59,11 @@ class SlackEventHook(BaseSlackEventHook):
 class SlackMentionHook(BaseSlackEventHook):
     """슬랙 멘션 이벤트 웹훅 스키마"""
     event: SlackMentionEvent = Field(title='이벤트 상세')
+
+
+class SlackBotDirectMessageHook(BaseSlackEventHook):
+    """슬랙 멘션 이벤트 웹훅 스키마"""
+    event: SlackBotEvent = Field(title='이벤트 상세')
 
 
 class SlackChallengeHook(BaseModel):
