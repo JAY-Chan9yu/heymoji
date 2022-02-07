@@ -33,9 +33,6 @@ class SlackService:
         슬랙 이벤트를 받아서 type 별로 처리하는 함수
         """
         slack_event = SlackEventType(event.type)
-        user = await cls._user_app_service.get_user(slack_id=event.user)
-        if user is None:
-            return
 
         # 이모지 업데이트
         if slack_event in [SlackEventType.ADDED_REACTION, SlackEventType.REMOVED_REACTION]:
