@@ -9,7 +9,8 @@ from conf import settings
 
 
 def mapping_slack_command_to_dict(event: SlackMentionEvent) -> (CommandType, dict):
-    mapped_attr = {}
+    # 기본적으로 reaction 한 유저의 slack_id 를 사용한다
+    mapped_attr = {'slack_id': event.user}
 
     try:
         event_command = event.text.split()

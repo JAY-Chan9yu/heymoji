@@ -43,8 +43,8 @@ class SlackService:
                 return
             await cls._reaction_app_service.update_sending_reaction(event)
 
-        # 앱 맨션 핸들링
-        elif slack_event == SlackEventType.APP_MENTION_REACTION:
+        # 앱 맨션, 메세지 핸들링
+        elif slack_event in [SlackEventType.APP_MENTION_REACTION, SlackEventType.APP_MESSAGE]:
             await cls.mention_command_handler(event)
 
     @classmethod

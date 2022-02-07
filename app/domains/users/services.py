@@ -63,9 +63,6 @@ class UserService:
 
 @asynccontextmanager
 async def user_check_manager(attr):
-    if not attr.get('slack_id'):
-        return
-
     user = await UserService.get_by_slack_id(slack_id=attr['slack_id'])
 
     try:

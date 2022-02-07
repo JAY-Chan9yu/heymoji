@@ -93,9 +93,11 @@ def get_help_msg() -> list:
         "text": {
             "type": "mrkdwn",
             "text": "*[멤버 등록]*\n"
-                    f"<@{bot_name}> --create_user --name=이름 --slack_id=슬랙ID --avatar_url=이미지URL --department=부서\n\n"
+                    "이름은 필수 입니다!\n"
+                    f"<@{bot_name}> --create_user --name=이름 --avatar_url=이미지URL --department=부서\n\n"
                     "*[멤버 정보 업데이트]*\n"
-                    f"<@{bot_name}> --update_user --slack_id=슬랙ID --avatar_url=이미지URL\n\n"
+                    "업데이트할 정보만 적어주세요!\n"
+                    f"<@{bot_name}> --update_user --avatar_url=이미지URL\n\n"
                     "*[이번달 베스트 멤버 리스트 추출]*\n"
                     f"<@{bot_name}> --show_best_member --year=2022 --month=1\n\n"
                     "*[유저 숨기기]*\n"
