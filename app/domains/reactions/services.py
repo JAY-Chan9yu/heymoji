@@ -143,7 +143,7 @@ class ReactionService(GenericService):
 
     @staticmethod
     def change_str_to_emoji(emoji_type: str) -> str:
-        for best_type in settings.config.BEST_TYPES:
+        for best_type in settings.config.ALLOWED_EMOJI_TYPES:
             if emoji_type in best_type['emoji_names']:
                 return best_type['emoji']
-        return '🐹'
+        return '👻'

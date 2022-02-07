@@ -99,7 +99,7 @@ class ReactionAppService:
                 username=user.username
             ))
 
-        for best_type in settings.config.BEST_TYPES:
+        for best_type in settings.config.ALLOWED_EMOJI_TYPES:
             max_emoji_count = 0
 
             for user_received_emoji_info in user_received_emoji_infos:

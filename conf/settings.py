@@ -23,7 +23,7 @@ class BaseConfig(BaseSettings):
     SLACK_TOKEN: str = Field(env="SLACK_TOKEN")
     ERROR_CHANNEL: str = Field(env="ERROR_CHANNEL")
     BOT_NAME: str = Field(env="BOT_NAME")
-    BEST_TYPES: list = Field(env="BEST_TYPES", default=[])
+    ALLOWED_EMOJI_TYPES: list = Field(env="ALLOWED_EMOJI_TYPES", default=[])
 
     RANK_URL: str = Field(env="RANK_URL", default="")
 
