@@ -32,8 +32,8 @@ class ReactionRepository(GenericRepository):
         q = select(self.model).filter(self.model.id == _id)
         async with async_session_manager() as session:
             results = await session.execute(q)
-            for reaction_column in results:
-                return Reaction(**reaction_column[0].__dict__)
+            for result in results:
+                return Reaction(**result[0].__dict__)
 
     async def get_by_slack_id_and_date(self, slack_id: str, year: int, month: int) -> List[Reaction]:
         q = select(self.model).options(
@@ -51,8 +51,8 @@ class ReactionRepository(GenericRepository):
         reactions = []
         async with async_session_manager() as session:
             results = await session.execute(q)
-            for reaction_column in results:
-                reactions.append(Reaction(**reaction_column[0].__dict__))
+            for result in results:
+                reactions.append(Reaction(**result[0].__dict__))
 
         return reactions
 
@@ -74,8 +74,8 @@ class ReactionRepository(GenericRepository):
         reactions = []
         async with async_session_manager() as session:
             results = await session.execute(q)
-            for reaction_column in results:
-                reactions.append(Reaction(**reaction_column[0].__dict__))
+            for result in results:
+                reactions.append(Reaction(**result[0].__dict__))
 
         return reactions
 

@@ -11,6 +11,14 @@ from app.utils.utils import slack_command_exception_handler, mapping_slack_comma
 from conf import settings
 
 
+SLACK_EVENT_HOOKS = Union[
+    SlackEventHook,
+    SlackMentionHook,
+    SlackChallengeHook,
+    SlackBotDirectMessageHook
+]
+
+
 class SlackService:
     _user_app_service = UserAppService
     _reaction_app_service = ReactionAppService
@@ -18,9 +26,8 @@ class SlackService:
     @classmethod
     async def slack_web_hook_handler(
         cls,
-        slack_event: Union[SlackEventHook, SlackMentionHook, SlackChallengeHook, SlackBotDirectMessageHook]
+        slack_event: SLACK_EVENT_HOOKS
     ) -> Optional[SlackChallengeHookResponse]:
-
         # 슬랙봇 DM 예외처리
         if type(slack_event) == SlackBotDirectMessageHook:
             return

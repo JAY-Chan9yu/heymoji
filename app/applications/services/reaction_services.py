@@ -47,7 +47,6 @@ class ReactionAppService:
             received_user_id=received_user.id,
             send_user_id=send_user.id
         )
-
         is_updated = await cls._reaction_domain_service.update_or_create_reaction(
             reaction=reaction,
             event_type=event_type,
