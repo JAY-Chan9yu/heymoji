@@ -1,18 +1,20 @@
 <p align="center">
-<img src="https://user-images.githubusercontent.com/24591259/115119824-565a0780-9fe5-11eb-9d40-e150771b9b8b.png" width="200px"/>
+<img src="https://user-images.githubusercontent.com/24591259/115119824-565a0780-9fe5-11eb-9d40-e150771b9b8b.png" width="150px"/>
 </p>
 
-# 🤩🏆 emoji_rank 🏆👋
+# 🤩 이모지 랭크 (Emoji Rank) 🏆
 ### 개발자의 한마디 👨🏻‍💻
-링크드인에서 <a href="https://medium.com/mathpresso/%EC%95%88%EB%85%95%ED%95%98%EC%84%B8%EC%9A%94-mathpresso%EC%9D%98-backend-web-%ED%8C%80%EC%97%90%EC%84%9C-backend-engineer%EB%A1%9C-%EC%9D%BC%ED%95%98%EA%B3%A0-%EC%9E%88%EB%8A%94-dan%EC%9E%85%EB%8B%88%EB%8B%A4-c7a0641333e8">매프 멤버들이 서로 토마토를 주는 이유는?<a/> 라는 글을 읽고, 슬랙 이모지(Emoji)로 멤버들에게 ``칭찬``이나 ``리스펙`` 할 수 있는 문화가 생긴다면 재밌기도 하고 고마움도 표현할 수 있을 것 같았습니다.<br/><br/>
+링크드인에서 <a href="https://medium.com/mathpresso/%EC%95%88%EB%85%95%ED%95%98%EC%84%B8%EC%9A%94-mathpresso%EC%9D%98-backend-web-%ED%8C%80%EC%97%90%EC%84%9C-backend-engineer%EB%A1%9C-%EC%9D%BC%ED%95%98%EA%B3%A0-%EC%9E%88%EB%8A%94-dan%EC%9E%85%EB%8B%88%EB%8B%A4-c7a0641333e8">매프 멤버들이 서로 토마토를 주는 이유는?<a/> 라는 글을 읽고, 슬랙 이모지(Emoji)로 멤버들에게 ``칭찬``이나 ``리스펙`` 할 수 있는 문화가 생긴다면 재밌기도 하고 고마움도 표현할 수 있을 것 같았습니다.<br/>
+
 그래서 이런 재미난 기능은 ``오픈소스``로 공개하면 좋을 것 같다고 생각해서 토이 프로젝트로 만들어 보았습니다.<br/>
 (근데 Nodejs로 만들어진게 이미 있었네요 <a href="https://github.com/chralp/heyburrito">heyburrito</a>)<br/><br/>
-그래도 만들어 보면 재밌을 것 같아서 ``FastAPI``를 한번 공부해볼 겸 해서 이틀정도 삽질 하면서 만들었습니다.😅 <br/>
-(Django에 스며들어 있어서, 생각보다 어려웠네요) <br/><br/>
 좀 더 ``재미난 기능 + 완성도 있는 프로젝트``가 되기위해 유지보수는 지속적으로 할 예정입니다.💪<br/>
 FastAPI에 구조나 프로젝트 관련된 추가기능, 개선사항 ``PR``은 언제나 환영입니다! <br/>
-TMI: 아이콘은 이모지 랭크라서... 갑자기 LoL랭크가 떠올랐고, 제가 골드라서...😂 디자인 잘하시는분...기여 해주십쇼! <br/>
-<br/>
+
+🙈 TMI: <br/> 
+아이콘은 이름 그대로 `랭크`에서 순간 `LoL랭크`가 떠올랐고, 제가 골드라서...😂<br/>
+디자인 잘하시는분 기여해 주세요!ㅋㅋ <br/><br/>
+
 
 # Server 🖥
 ## 👋  개요 
@@ -44,8 +46,8 @@ DDD에 대한 스터디를 위해 구조를 변경했으며 https://github.com/E
 |   └── settings.py
 ├── scripts
 └── seed_work (프로젝트에서 기본적으로 제공해야하는 작업, 코드)
+```
 
-```	
 ## ⚙️ 패키지 설치
 ```
 pip install -r requirements
@@ -59,9 +61,13 @@ DB는 ``MySQL``을 사용합니다. 비동기 처리를 위해 ``aiomysql`` 와 
 
 |이름|설명|
 |----|----|
-|BEST_TYPES|emoji를 가장 많이 받은 멤버를 추출할때 사용합니다.|
-|REACTION_LIST|reaction 카운트 허용할 Emoji list|
-|DAY_MAX_REACTION|하루 최대 사용할 수 있는 Reacion 개수 (현재 버전에서는 사용하지 않습니다)|
+|ENV|배포환경 정의|
+|ALLOWED_EMOJI_TYPES|이모지 타입들을 정의합니다.|
+|REACTION_LIST|웹훅 리액션으로 허용된 이모지(reaction)들을 정의합니다.|
+|DAY_MAX_REACTION|하루 최대 사용할 수 있는 Reaction 개수 (선택요소 입니다.)|
+|SLACK_TOKEN|슬랙 토큰|
+|BOT_NAME|슬랙봇 이름|
+|ERROR_CHANNEL|슬랙 에러 리포팅 채널|
 |HOST|DB 호스트|
 |PORT|DB 포트|
 |DATABASE|DB 이름|
@@ -70,7 +76,7 @@ DB는 ``MySQL``을 사용합니다. 비동기 처리를 위해 ``aiomysql`` 와 
 
 
 ## 💡  실행 
-main.py가 있는 root경로에 가서 <a href="https://www.uvicorn.org/">uvicorn</a>으로 서버를 실행시킵니다.<br/>
+`root경로`(/emoji_rank) 에 가서 <a href="https://www.uvicorn.org/">uvicorn</a>으로 서버를 실행시킵니다.<br/>
 백그라운드로 실행하기 위해서는 `&`를 마지막에 붙여주세요.
 ```
 uvicorn app.main:app --port 8080
@@ -168,9 +174,9 @@ https://api.slack.com/apps 에 접속하여 create app 버튼을 클릭한 후, 
 <img src="https://user-images.githubusercontent.com/24591259/153050733-875d2f7a-da23-42b6-a4a2-bbb35e6d2f82.png" width="400px"/>
 <img src="https://user-images.githubusercontent.com/24591259/153050405-191203ea-3a0c-450e-bac2-fb66aef7e3ab.png" width="400px"/>
 
-슬랙봇과 DM을 통해 명령어를 실행하기 위해서는 `message.im`을 선택하고 Message Tab 기능을 on 시켜주셔야 합니다.
+슬랙봇과 DM을 통해 명령어를 실행하기 위해서는 `message.im`을 선택하고 Message Tab 기능을 on 시켜주셔야 합니다.<br/>
 
-<br/> 마지막으로 app을 workspace에 **install** 하면 설정한 이벤트가 일어날때마다 `slack` 서버에서 `emoji_rank`서버로 api를 호출합니다.(WebHook)
+마지막으로 `app`을 `workspace`에 설치(install)하면 설정한 이벤트가 일어날때마다 `slack`에서 `emoji_rank`서버로 웹훅 api를 호출합니다.
 
 
 # 프론트 예제 📲
