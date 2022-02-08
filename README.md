@@ -15,17 +15,43 @@ TMI: 아이콘은 이모지 랭크라서... 갑자기 LoL랭크가 떠올랐고,
 <br/>
 
 # Server 🖥
-### 1. 개요 👋
+## 👋  개요 
 ``emoji_rank``는 ``Python 3.7.9``, ``FastAPI`` 로 개발되었습니다.<br/> 
 그 외 버전에서 패키지 및 동작에 대한 호환은 보장하지 않습니다. (근데 거의 다 될거에요 python 3 이상이면...아마두~😁 )<br/>
 
+## 🛠  프로젝트 구조
+처음 EmojiRank를 개발할때는 DDD 구조가 아니었습니다. <br/> 
+DDD에 대한 스터디를 위해 구조를 변경했으며 https://github.com/Ermlab/python-ddd 를 참고하였습니다.<br/> 
+다소 복잡할 수 있으니 추후 유지보수와 여러 상태변경이 일어나는 경우 DDD가 좀 더 유연할 거라고 생각했습니다😁
+```
+├── apps
+|   ├─ api 
+|   |  ├── dependancy
+|   |  └── router
+|   ├─ applications 
+|   |  └── services (Application Service)
+|   ├─ domains
+|   |  └─ user (도메인)
+|   |     ├─ entities.py 
+|   |     ├─ services.py (Domain Service)
+|   |     ├─ repositories.py
+|   |     └─ schemas.py	
+|   ├─ infrastructure (infra 관련 정의 구조)
+|   ├─ utils
+|   ├─ tests
+|   └─ main.py
+├── conf
+|   └── settings.py
+├── scripts
+└── seed_work (프로젝트에서 기본적으로 제공해야하는 작업, 코드)
 
-### 2. 패키지 설치 ⚙️
+```	
+## ⚙️ 패키지 설치
 ```
 pip install -r requirements
 ```
 
-### 3. 세팅 💾
+## 💾  세팅
 ``.env``파일을 통해 환경변수 등을 세팅 할 수 있습니다.
 ``.env_sample``을 참고하셔서 원하시는 타입의 이모지등을 세팅해 보세요!
 DB는 ``MySQL``을 사용합니다. 비동기 처리를 위해 ``aiomysql`` 와 함께 사용합니다.<br/>
@@ -43,7 +69,7 @@ DB는 ``MySQL``을 사용합니다. 비동기 처리를 위해 ``aiomysql`` 와 
 |PASSWORD|DB 패스워드)|
 
 
-### 4. 실행 💡
+## 💡  실행 
 main.py가 있는 root경로에 가서 <a href="https://www.uvicorn.org/">uvicorn</a>으로 서버를 실행시킵니다.<br/>
 백그라운드로 실행하기 위해서는 `&`를 마지막에 붙여주세요.
 ```
@@ -56,8 +82,29 @@ uvicorn app.main:app --port 8080
 ```
 잘못된 프로세스 kill을 주의하세요!<br/>
 
-### 5. 프로세스 Live 체크 🧟‍♂️
-shell script로 간단하게 Live 체크를 진행 할 수 있습니다.. 크론탭에 1분마다 실행하도록 등록.<br/>
+## 📝  API 문서 및 테스트
+``HOST_URL/docs``로 접속하면 ``Swagger``로 만들어진 web 페이지를 확인할 수 있습니다. (FastAPI는 swagger, redoc 지원) 
+<img src="https://user-images.githubusercontent.com/24591259/115111371-09f9d200-9fbb-11eb-8115-e0ff86d677fd.png" width="400px"/>
+<br/>
+
+## 👾  슬랙 맨션 명령어
+|이름|설명|
+|----|----|
+|help|커멘드 관련 help|
+|create_user|user 생성|
+|update_user|user 정보 업데이트|
+|show_user|유저 is_display = True (노출)|
+|hide_user|유저 is_display = False (숨김)|
+|show_best_member|해당월 베스트 멤버 추출|
+
+
+```
+ex) 실제 사용시 '{{ }}' 는 제거해주세요
+@슬랙봇 --create_user --name={{이름}} --avatar_url={{이미지URL}}
+```
+
+## 🧟‍♂️  프로세스 Live 체크 (선택)
+shell script로 간단하게 Live 체크를 진행 할 수 있습니다! 크론탭에 1분마다 실행하도록 등록.<br/>
 로깅도 추가하면 좋습니다.
 ```
 #! /bin/bash
@@ -72,30 +119,9 @@ if [ "$checker" == "0" ]; then
 fi
 ```
 
-### 6. API 문서 및 테스트 📝
-``HOST_URL/docs``로 접속하면 ``Swagger``로 만들어진 web 페이지를 확인할 수 있습니다. (FastAPI는 swagger, redoc 지원) 
-<img src="https://user-images.githubusercontent.com/24591259/115111371-09f9d200-9fbb-11eb-8115-e0ff86d677fd.png" width="400px"/>
-<br/>
-
-### 7. 슬랙 커맨드 👾
-|이름|설명|
-|----|----|
-|help|커멘드 관련 help|
-|create_user|user 생성|
-|update_user|user 정보 업데이트|
-|show_user|유저 is_display = True (노출)|
-|hide_user|유저 is_display = False (숨김)|
-|show_best_member|해당월 베스트 멤버 추출|
-
-
-```
-ex) 실제 사용시 '{{ }}' 는 제거해주세요
-@슬랙봇 --create_user --name={{이름}} --slack_id={{슬랙ID}} --avatar_url={{이미지URL}}
-```
-
-### 8. 배치 스크립트 크론탭 등록 🏃🏻‍♂️
-멤버당 하루에 5개씩 지정한 Emoji를 다른 멤버에게 줄 수 있도록 했습니다.<br/>
-매일 자정에 다시 5개로 리셋하는 배치 스크립트를 ``크론탭``에 등록합니다.<br/>
+## 🏃🏻‍ 배치 스크립트 크론탭 등록 (선택)
+멤버당 하루에 허용된 ``DAY_MAX_REACTION`` 만큼 이모지(Emoji)를 다른 멤버에게 줄 수 있도록 했습니다.<br/>
+매일 자정에 다시 ``DAY_MAX_REACTION``만큼 카운트를 리셋하는 배치 스크립트를 ``크론탭``에 등록합니다.<br/>
 저는 ``쉘스크립트``를 만들어서 ``크론탭``에 등록했습니다.
 ```
 #!/bin/bash
@@ -109,7 +135,7 @@ $PYTHON_PATH $SCRIPT_PATH
 ```
 <br/>
 
-# Slack Bot 🤖
+# 🤖 Slack Bot 설정 
 <img src="https://user-images.githubusercontent.com/24591259/114943304-bf743a80-9e80-11eb-85ad-30cb26591ea3.png" width="400px"/>
 
 https://api.slack.com/apps 에 접속하여 create app 버튼을 클릭한 후, <br/>
@@ -138,6 +164,12 @@ https://api.slack.com/apps 에 접속하여 create app 버튼을 클릭한 후, 
 <img src="https://user-images.githubusercontent.com/24591259/114946460-2811e600-9e86-11eb-8cc5-bbb8bcf7db42.png" width="400px"/>
 
 `emoji_rank`는 슬랙 멤버들의 `reaction_added`, `reaction_removed` 이벤트와 bot을 호출하는 `app_mention` 이렇게 3가지 이벤트를 받습니다.
+
+<img src="https://user-images.githubusercontent.com/24591259/153050733-875d2f7a-da23-42b6-a4a2-bbb35e6d2f82.png" width="400px"/>
+<img src="https://user-images.githubusercontent.com/24591259/153050405-191203ea-3a0c-450e-bac2-fb66aef7e3ab.png" width="400px"/>
+
+슬랙봇과 DM을 통해 명령어를 실행하기 위해서는 `message.im`을 선택하고 Message Tab 기능을 on 시켜주셔야 합니다.
+
 <br/> 마지막으로 app을 workspace에 **install** 하면 설정한 이벤트가 일어날때마다 `slack` 서버에서 `emoji_rank`서버로 api를 호출합니다.(WebHook)
 
 
