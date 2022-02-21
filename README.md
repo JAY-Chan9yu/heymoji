@@ -1,8 +1,8 @@
 <p align="center">
-<img src="https://user-images.githubusercontent.com/24591259/115119824-565a0780-9fe5-11eb-9d40-e150771b9b8b.png" width="150px"/>
+<img src="https://user-images.githubusercontent.com/24591259/155010131-b34115a5-d393-4791-ab97-763d6eeb903d.png"/>
 </p>
 
-# 🤩 Heymoji (Hey + Emoji) 🏆
+# 🤩 Hey + Emoji = Heymoji 🏆
 ### 개발자의 한마디 👨🏻‍💻
 링크드인에서 <a href="https://medium.com/mathpresso/%EC%95%88%EB%85%95%ED%95%98%EC%84%B8%EC%9A%94-mathpresso%EC%9D%98-backend-web-%ED%8C%80%EC%97%90%EC%84%9C-backend-engineer%EB%A1%9C-%EC%9D%BC%ED%95%98%EA%B3%A0-%EC%9E%88%EB%8A%94-dan%EC%9E%85%EB%8B%88%EB%8B%A4-c7a0641333e8">매프 멤버들이 서로 토마토를 주는 이유는?<a/> 라는 글을 읽고, 슬랙 이모지(Emoji)로 멤버들에게 ``칭찬``이나 ``리스펙`` 할 수 있는 문화가 생긴다면 재밌기도 하고 고마움도 표현할 수 있을 것 같았습니다.<br/>
 
