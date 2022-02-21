@@ -2,7 +2,7 @@
 <img src="https://user-images.githubusercontent.com/24591259/115119824-565a0780-9fe5-11eb-9d40-e150771b9b8b.png" width="150px"/>
 </p>
 
-# 🤩 이모지 랭크 (Emoji Rank) 🏆
+# 🤩 Heymoji (Hey + Emoji) 🏆
 ### 개발자의 한마디 👨🏻‍💻
 링크드인에서 <a href="https://medium.com/mathpresso/%EC%95%88%EB%85%95%ED%95%98%EC%84%B8%EC%9A%94-mathpresso%EC%9D%98-backend-web-%ED%8C%80%EC%97%90%EC%84%9C-backend-engineer%EB%A1%9C-%EC%9D%BC%ED%95%98%EA%B3%A0-%EC%9E%88%EB%8A%94-dan%EC%9E%85%EB%8B%88%EB%8B%A4-c7a0641333e8">매프 멤버들이 서로 토마토를 주는 이유는?<a/> 라는 글을 읽고, 슬랙 이모지(Emoji)로 멤버들에게 ``칭찬``이나 ``리스펙`` 할 수 있는 문화가 생긴다면 재밌기도 하고 고마움도 표현할 수 있을 것 같았습니다.<br/>
 
@@ -18,11 +18,11 @@ FastAPI에 구조나 프로젝트 관련된 추가기능, 개선사항 ``PR``은
 
 # Server 🖥
 ## 👋  개요 
-``emoji_rank``는 ``Python 3.7.9``, ``FastAPI`` 로 개발되었습니다.<br/> 
+``Heymoji``는 ``Python 3.7.9``, ``FastAPI`` 로 개발되었습니다.<br/> 
 그 외 버전에서 패키지 및 동작에 대한 호환은 보장하지 않습니다. (근데 거의 다 될거에요 python 3 이상이면...아마두~😁 )<br/>
 
 ## 🛠  프로젝트 구조
-처음 EmojiRank를 개발할때는 DDD 구조가 아니었습니다. <br/> 
+처음 Heymoji를 개발할때는 DDD 구조가 아니었습니다. <br/> 
 DDD에 대한 스터디를 위해 구조를 변경했으며 https://github.com/Ermlab/python-ddd 를 참고하였습니다.<br/> 
 다소 복잡할 수 있으니 추후 유지보수와 여러 상태변경이 일어나는 경우 DDD가 좀 더 유연할 거라고 생각했습니다😁
 ```
@@ -169,19 +169,19 @@ https://api.slack.com/apps 에 접속하여 create app 버튼을 클릭한 후, 
 
 <img src="https://user-images.githubusercontent.com/24591259/114946460-2811e600-9e86-11eb-8cc5-bbb8bcf7db42.png" width="400px"/>
 
-`emoji_rank`는 슬랙 멤버들의 `reaction_added`, `reaction_removed` 이벤트와 bot을 호출하는 `app_mention` 이렇게 3가지 이벤트를 받습니다.
+`Heymoji`는 슬랙 멤버들의 `reaction_added`, `reaction_removed` 이벤트와 bot을 호출하는 `app_mention` 이렇게 3가지 이벤트를 받습니다.
 
 <img src="https://user-images.githubusercontent.com/24591259/153050733-875d2f7a-da23-42b6-a4a2-bbb35e6d2f82.png" width="400px"/>
 <img src="https://user-images.githubusercontent.com/24591259/153050405-191203ea-3a0c-450e-bac2-fb66aef7e3ab.png" width="400px"/>
 
 슬랙봇과 DM을 통해 명령어를 실행하기 위해서는 `message.im`을 선택하고 Message Tab 기능을 on 시켜주셔야 합니다.<br/>
 
-마지막으로 `app`을 `workspace`에 설치(install)하면 설정한 이벤트가 일어날때마다 `slack`에서 `emoji_rank`서버로 웹훅 api를 호출합니다.
+마지막으로 `app`을 `workspace`에 설치(install)하면 설정한 이벤트가 일어날때마다 `slack`에서 `Heymoji`서버로 웹훅 api를 호출합니다.
 
 
 # 프론트 예제 📲
 ![vllo 5](https://user-images.githubusercontent.com/24591259/115112136-0405f000-9fbf-11eb-8fcf-9527d0bc5188.GIF)
 
-간단하게 ``vue``프로젝트에서 `emoji_rank`의 api를 호출해 **User list**를 보여주도록 만들어 봤습니다.<br/>
+간단하게 ``vue``프로젝트에서 `Heymoji`의 api를 호출해 **User list**를 보여주도록 만들어 봤습니다.<br/>
 이모지 추가, 제거 event에 따라 서버에서 count 로직을 처리해주는걸 확인 할 수 있습니다.
 <a href="https://github.com/JAY-Chan9yu/emoji_rank_web">Emoji rank web<a/> 프로젝트를 **clone** 해서 확인해보세요😃
