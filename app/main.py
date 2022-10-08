@@ -1,6 +1,7 @@
 from fastapi import FastAPI
 from starlette.middleware.cors import CORSMiddleware
 
+from app.Infrastructure.database import on_startup, on_shutdown
 from app.api.routers.slack import slack_router
 from app.api.routers.users import user_router
 from conf import settings
@@ -28,9 +29,11 @@ app = start_application()
 
 @app.on_event("startup")
 async def startup_event():
+    on_startup()
     print("startup EmojiRank")
 
 
 @app.on_event("shutdown")
 def shutdown_event():
+    on_shutdown()
     print("shutdown EmojiRank")
