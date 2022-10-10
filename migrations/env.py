@@ -5,6 +5,8 @@ from sqlalchemy import pool
 
 from alembic import context
 
+from conf import settings
+
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
 config = context.config
@@ -24,6 +26,14 @@ target_metadata = None
 # can be acquired:
 # my_important_option = config.get_main_option("my_important_option")
 # ... etc.
+
+
+if not config.get_main_option('sqlalchemy.url'):
+    config.set_main_option(
+        'sqlalchemy.url',
+        f'mysql+pymysql://{settings.config.USERNAME}:{settings.config.PASSWORD}'
+        f'@{settings.config.HOST}:{settings.config.PORT}/{settings.config.DATABASE}'
+    )
 
 
 def run_migrations_offline() -> None:

@@ -1,6 +1,5 @@
 from enum import Enum
 
-from alembic import context
 from pydantic import BaseSettings, Field
 
 
@@ -28,10 +27,6 @@ class BaseConfig(BaseSettings):
     ALLOWED_EMOJI_TYPES: list = Field(env="ALLOWED_EMOJI_TYPES", default=[])
 
     RANK_URL: str = Field(env="RANK_URL", default="")
-
-    alembic_config = context.config
-    if not alembic_config.get_main_option('sqlalchemy.url'):
-        alembic_config.set_main_option('sqlalchemy.url', f'mysql+pymysql://{USERNAME}:{PASSWORD}')
 
     class Config:
         env_file = ".env"
