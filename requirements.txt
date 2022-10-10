@@ -1,4 +1,5 @@
 aiomysql==0.0.21
+alembic==1.8.1
 asyncmy==0.2.3
 certifi==2021.5.30
 cffi==1.14.6
@@ -12,6 +13,8 @@ greenlet==1.1.1
 h11==0.12.0
 idna==3.2
 importlib-metadata==4.6.3
+Mako==1.2.3
+MarkupSafe==2.1.1
 mysql==0.0.3
 mysqlclient==2.0.3
 pycparser==2.20
