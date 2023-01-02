@@ -1,0 +1,18 @@
+.reaction {
+    color: mediumseagreen;
+    margin: 10px;
+    padding: 10px;
+    border-top: 3px dotted black;
+}
+
+.username {
+    font-weight: bolder;
+}
+
+.emoji {
+    margin: 5px;
+}
+
+.user-list {
+    margin: 10px;
+}

@@ -1,0 +1,67 @@
+version: '3.1'
+networks:
+  heymoji-net:
+    driver: bridge
+
+services:
+
+  api:
+    build: ./
+    container_name: heymoji-api
+    platform: linux/amd64
+    tty: true
+    stdin_open: true
+    ports:
+      - "8000:80"
+    networks:
+      - heymoji-net
+    volumes:
+      - ./:/app
+    depends_on:
+      - db
+    command:
+      - sh
+      - -c
+      - |
+        pip install --upgrade pip
+        pip install -r requirements.txt
+        alembic upgrade head
+        gunicorn -k uvicorn.workers.UvicornWorker -c /gunicorn_conf.py app.main:app
+
+  web:
+    build:
+      dockerfile: web.Dockerfile
+    ports:
+      - "8080:8080"
+    container_name: heymoji-web
+    platform: linux/amd64
+    tty: true
+    volumes:
+      - ./frontend:/app
+    stdin_open: true
+    depends_on:
+      - api
+    networks:
+      - heymoji-net
+    command:
+      - sh
+      - -c
+      - |
+        npm install
+        npm run serve
+
+  db:
+     image: mysql:latest
+     platform: linux/amd64
+     container_name: heymoji-db
+     #restart: always
+     ports:
+       - '33080:3306'
+     volumes:
+       - ./db/data:/var/lib/mysql
+       - ./db/my.cnf:/etc/mysql/conf.d/my.cnf:ro
+     environment:
+       MYSQL_ROOT_PASSWORD: root
+       MYSQL_DATABASE: heymoji
+     networks:
+       - heymoji-net
