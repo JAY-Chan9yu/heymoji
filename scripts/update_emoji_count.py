@@ -3,9 +3,9 @@ from conf import settings
 
 
 connection = pymysql.connect(
-    host=settings.config.HOST,
-    user=settings.config.USERNAME,
-    password=settings.config.PASSWORD,
+    host=settings.config.DB_HOST,
+    user=settings.config.DB_USERNAME,
+    password=settings.config.DB_PASSWORD,
     db=settings.config.DATABASE
 )
 

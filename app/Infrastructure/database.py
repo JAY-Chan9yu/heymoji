@@ -20,16 +20,16 @@ def on_startup():
     global _db_connection
 
     _async_db_connection = create_async_engine(
-        f'mysql+aiomysql://{settings.config.USERNAME}:{settings.config.PASSWORD}'
-        f'@{settings.config.HOST}:{settings.config.PORT}/{settings.config.DATABASE}',
-        echo=True if settings.config.ENV != settings.EmojiRankEnv.PROD.value else False,
+        f'mysql+aiomysql://{settings.config.DB_USERNAME}:{settings.config.DB_PASSWORD}'
+        f'@{settings.config.DB_HOST}:{settings.config.DB_PORT}/{settings.config.DATABASE}',
+        echo=True if settings.config.ENV != settings.HeymojiEnv.PROD.value else False,
         future=True
     )
 
     _db_connection = create_engine(
-        f'mysql+pymysql://{settings.config.USERNAME}:{settings.config.PASSWORD}'
-        f'@{settings.config.HOST}:{settings.config.PORT}/{settings.config.DATABASE}',
-        echo=True if settings.config.ENV != settings.EmojiRankEnv.PROD.value else False,
+        f'mysql+pymysql://{settings.config.DB_USERNAME}:{settings.config.DB_PASSWORD}'
+        f'@{settings.config.DB_HOST}:{settings.config.DB_PORT}/{settings.config.DATABASE}',
+        echo=True if settings.config.ENV != settings.HeymojiEnv.PROD.value else False,
         # connect_args={"check_same_thread": False}
     )
 

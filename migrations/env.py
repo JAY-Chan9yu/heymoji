@@ -31,8 +31,8 @@ target_metadata = None
 if not config.get_main_option('sqlalchemy.url'):
     config.set_main_option(
         'sqlalchemy.url',
-        f'mysql+pymysql://{settings.config.USERNAME}:{settings.config.PASSWORD}'
-        f'@{settings.config.HOST}:{settings.config.PORT}/{settings.config.DATABASE}'
+        f'mysql+pymysql://{settings.config.DB_USERNAME}:{settings.config.DB_PASSWORD}'
+        f'@{settings.config.DB_HOST}:{settings.config.DB_PORT}/{settings.config.DATABASE}'
     )
 
 
