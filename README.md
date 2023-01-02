@@ -79,7 +79,7 @@ DB는 `MySQL`을 사용하며 비동기 처리를 위해 `aiomysql`라이브러�
 | DATABASE            |DB 이름|
 | DB_USERNAME            |DB 접속 유저네임|
 | DB_PASSWORD            |DB 패스워드|
-| DEFAULT_AVATAR_URL  |기본 프로필 이미지 URL)|
+| DEFAULT_AVATAR_URL  |기본 프로필 이미지 URL|
 
 <br/>
 
@@ -89,7 +89,7 @@ DB는 `MySQL`을 사용하며 비동기 처리를 위해 `aiomysql`라이브러�
 
 <img width="352" alt="스크린샷 2023-01-02 오후 10 54 35" src="https://user-images.githubusercontent.com/24591259/210240727-139572eb-5874-4fb9-8cd5-fdbc4761cea7.png">
 
-`docker-comopse` 실행 전에 README 하단에 있는 `Slack Bot 설정` 설명을 먼저 보시고 `SlackToken` 같은 환경변수를 주입해주세요!
+`docker-comopse` 실행 전에 README 하단에 있는 <a href="https://github.com/JAY-Chan9yu/heymoji#-slack-bot-%EC%84%A4%EC%A0%95">Slack Bot 설정</a>을 먼저 보시고 `SlackToken` 같은 환경변수를 먼저 주입해주세요!
 
 <br/>
 
