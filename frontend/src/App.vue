@@ -48,39 +48,6 @@ export default {
 }
 </script>
 
-<script>
-
-import UserList from './components/UserList.vue'
-import {mapState} from 'vuex';
-
-export default {
-  name: 'App',
-  components: {
-    UserList
-  },
-  computed: {
-    ...mapState(['isLoading', 'refCount'])
-  },
-  created() {
-    this.axios.interceptors.request.use((config) => {
-      this.$store.commit('loading', true);
-      return config;
-    }, (error) => {
-      this.$store.commit('loading', false);
-      return Promise.reject(error);
-    });
-
-    this.axios.interceptors.response.use((response) => {
-      this.$store.commit('loading', false);
-      return response;
-    }, (error) => {
-      this.$store.commit('loading', false);
-      return Promise.reject(error);
-    });
-  }
-}
-</script>
-
 <style>
 @import url('https://cdn.rawgit.com/innks/NanumSquareRound/master/nanumsquareround.min.css');
 @import "../src/assets/styles/main.css";
