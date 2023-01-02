@@ -3,6 +3,7 @@ from typing import Optional, List
 
 from app.domains.users.entities import User
 from app.domains.users.repositories import UserRepository
+from conf import settings
 
 
 class UserService:
@@ -33,8 +34,8 @@ class UserService:
         return await cls._user_repository().insert(User(
             username=attr.get('name'),
             slack_id=attr.get('slack_id'),
-            avatar_url=attr.get('avatar_url'),
-            department=attr.get('department'),
+            avatar_url=attr.get('avatar_url', settings.config.DEFAULT_AVATAR_URL),
+            department=attr.get('department', '개그팀'),
         ))
 
     @classmethod

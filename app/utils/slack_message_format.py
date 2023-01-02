@@ -28,7 +28,7 @@ def get_best_user_format(title: str, best_users: dict) -> list:
             "block_id": "section568",
             "text": {
                 "type": "mrkdwn",
-                "text": f"이번 달 개그맨 보다 더 많은 웃음을 준 크루는?! *{best_users.get('🤣', '🙈')}*\n:kkkk: :기쁨:"
+                "text": f"이번 달 개그맨 보다 더 많은 웃음을 준 크루는?! *{best_users.get('🤣', '🙈')}*\n"
             },
             "accessory": {
                 "type": "image",
@@ -41,7 +41,7 @@ def get_best_user_format(title: str, best_users: dict) -> list:
             "block_id": "section569",
             "text": {
                 "type": "mrkdwn",
-                "text": f"이번 달 많은 크루를 도와준 천사 크루는?! *{best_users.get('🙏️', '🙈')}*\n:pray: :기도:"
+                "text": f"이번 달 많은 크루를 도와준 천사 크루는?! *{best_users.get('🙏️', '🙈')}*\n:pray:"
             },
             "accessory": {
                 "type": "image",
@@ -55,7 +55,7 @@ def get_best_user_format(title: str, best_users: dict) -> list:
             "text": {
                 "type": "mrkdwn",
                 "text": f"이번 달 가장 많은 이슈를 처리해 준 크루는?! *{best_users.get('👍', '🙈')}*\n"
-                        f":+1: :wow: :wonderfulk: :천재_개발자:"
+                        f":+1:"
             },
             "accessory": {
                 "type": "image",
@@ -68,7 +68,7 @@ def get_best_user_format(title: str, best_users: dict) -> list:
             "block_id": "section571",
             "text": {
                 "type": "mrkdwn",
-                "text": f"이번 달 가장 많은 크루를 당황시킨 크루는?! *{best_users.get('👀️', '🙈')}*\n:eye_shaking:"
+                "text": f"이번 달 가장 많은 크루를 당황시킨 크루는?! *{best_users.get('👀️', '🙈')}*\n"
             },
             "accessory": {
                 "type": "image",

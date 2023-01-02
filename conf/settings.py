@@ -27,6 +27,10 @@ class BaseConfig(BaseSettings):
     ALLOWED_EMOJI_TYPES: list = Field(env="ALLOWED_EMOJI_TYPES", default=[])
 
     RANK_URL: str = Field(env="RANK_URL", default="")
+    DEFAULT_AVATAR_URL: str = Field(
+        env="DEFAULT_AVATAR_URL",
+        default="https://github.com/JAY-Chan9yu/heymoji/blob/master/frontend/src/assets/logos/heymoji.png?raw=true"
+    )
 
     class Config:
         env_file = ".env"

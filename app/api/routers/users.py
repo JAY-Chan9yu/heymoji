@@ -8,7 +8,6 @@ from app.domains.reactions.entities import UserReceivedEmojiInfo
 from app.domains.users.schemas import UserCreateSchema
 from app.domains.users.entities import UserDetailInfo
 
-
 user_router = APIRouter()
 
 
