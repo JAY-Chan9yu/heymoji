@@ -37,7 +37,7 @@ class UserAppService:
 
     @classmethod
     async def create_user(cls, attr: dict):
-        await cls._user_domain_service.create_user(attr)
+        return await cls._user_domain_service.create_user(attr)
 
     @classmethod
     async def update_user(cls, attr: dict):
