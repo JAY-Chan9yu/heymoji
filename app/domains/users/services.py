@@ -26,7 +26,7 @@ class UserService:
         return await cls._user_repository().get_all_users()
 
     @classmethod
-    async def create_user(cls, attr: dict):
+    async def create_user(cls, attr: dict) -> User:
         user = await cls.get_by_slack_id(slack_id=attr['slack_id'])
         if user:
             return

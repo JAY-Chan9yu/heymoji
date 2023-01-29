@@ -7,7 +7,7 @@ from app.applications.services.reaction_services import ReactionAppService
 from app.applications.services.user_services import UserAppService
 from app.domains.reactions.entities import SlackEventType
 from app.utils.slack_message_format import get_command_error_msg, get_help_msg, get_best_user_format
-from app.utils.utils import slack_command_exception_handler, mapping_slack_command_to_dict, send_slack_msg
+from app.utils.utils import slack_command_exception_handler, parsing_slack_command_to_dict, send_slack_msg
 from conf import settings
 
 
@@ -47,13 +47,21 @@ class SlackService:
 
         # 이모지 업데이트
         if slack_event_type in [SlackEventType.ADDED_REACTION, SlackEventType.REMOVED_REACTION]:
-            if event.item_user == event.user or event.reaction not in settings.config.REACTION_LIST:
+            if cls._is_self_reaction(event.item_user, event.user) or not cls._is_allowed_reaction(event.reaction):
                 return
             await cls._reaction_app_service.update_sending_reaction(event)
 
         # 앱 맨션, 메세지 핸들링
         elif slack_event_type in [SlackEventType.APP_MENTION_REACTION, SlackEventType.APP_MESSAGE]:
             await cls.mention_command_handler(event)
+
+    @staticmethod
+    def _is_self_reaction(item_user: str, user: str) -> bool:
+        return item_user == user
+
+    @staticmethod
+    def _is_allowed_reaction(reaction: str) -> bool:
+        return reaction in settings.config.REACTION_LIST
 
     @classmethod
     async def mention_command_handler(cls, event: SlackMentionEvent):
@@ -65,8 +73,8 @@ class SlackService:
             CommandType.SHOW_USER_COMMAND: cls.show_user,
             CommandType.SHOW_BEST_MEMBER_COMMAND: cls.send_best_user_list_to_slack
         }
-        cmd, mapped_attr = mapping_slack_command_to_dict(event)
-        func: Callable[[dict, SlackMentionEvent], None] = mention_functions.get(cmd)
+        cmd, mapped_attr = parsing_slack_command_to_dict(event)
+        func: Optional[Callable[[dict, SlackMentionEvent], None]] = mention_functions.get(cmd)
 
         # 존재하지 않는 명령어인 경우
         if func is None:

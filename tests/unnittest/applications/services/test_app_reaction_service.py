@@ -108,7 +108,7 @@ class TestAppReactionService:
         assert user_received_emoji_infos[0].emoji_infos[0].emoji == emoji
         assert user_received_emoji_infos[0].emoji_infos[0].count == 1
 
-    @pytest.mark.asynci
+    @pytest.mark.asyncio
     async def test_get_my_reaction_infos(self, db, anyio_backend, mock_allowed_emoji):
         truncate_tables(["reactions"])
         for _ in range(0, 5):

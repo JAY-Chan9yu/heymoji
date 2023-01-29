@@ -29,7 +29,7 @@ class UserAppService:
         return await cls._user_domain_service.get_all_users()
 
     @classmethod
-    async def create_user(cls, attr: dict):
+    async def create_user(cls, attr: dict) -> User:
         return await cls._user_domain_service.create_user(attr)
 
     @classmethod
