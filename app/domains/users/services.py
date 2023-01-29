@@ -1,7 +1,7 @@
 from contextlib import asynccontextmanager
 from typing import Optional, List
 
-from app.domains.users.entities import User
+from app.domains.users.entities import User, UserDetailInfo
 from app.domains.users.repositories import UserRepository
 from conf import settings
 
@@ -14,11 +14,11 @@ class UserService:
         return await cls._user_repository().get_by_slack_id(slack_id)
 
     @classmethod
-    async def get_by_id(cls, _id: int):
+    async def get_by_id(cls, _id: int) -> Optional[User]:
         return await cls._user_repository().get_by_id(_id)
 
     @classmethod
-    async def get_detail_user(cls, **kwargs):
+    async def get_detail_user(cls, **kwargs) -> List[UserDetailInfo]:
         return await cls._user_repository().get_detail_info(**kwargs)
 
     @classmethod
@@ -55,11 +55,6 @@ class UserService:
         async with user_check_manager(attr) as user:
             user.show_user()
             await cls._user_repository().update(user)
-
-    @classmethod
-    async def update_my_reaction(cls, user: User, is_increase: bool):
-        user.decrease_my_reaction() if is_increase else user.increase_my_reaction()
-        return await cls._user_repository().update(user)
 
 
 @asynccontextmanager

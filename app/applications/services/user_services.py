@@ -8,13 +8,6 @@ class UserAppService:
     _user_domain_service = UserService
 
     @classmethod
-    async def update_today_assigned_reaction_count(cls, user: User, is_increase: bool):
-        """
-        오늘 유저에게 할당된 리액션 (다른 유저에게)줄 수 있는 카운트 업데이트
-        """
-        await cls._user_domain_service.update_my_reaction(user, is_increase)
-
-    @classmethod
     async def get_user(cls, slack_id: str) -> Optional[User]:
         return await cls._user_domain_service.get_by_slack_id(slack_id=slack_id)
 

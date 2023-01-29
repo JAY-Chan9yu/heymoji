@@ -1,4 +1,5 @@
 from enum import Enum
+from typing import Optional
 
 from pydantic import BaseSettings, Field
 
@@ -7,6 +8,7 @@ class HeymojiEnv(Enum):
     PROD = 'prod'
     STAGE = 'stage'
     DEV = 'dev'
+    TEST = 'test'
 
 
 class BaseConfig(BaseSettings):
@@ -15,11 +17,11 @@ class BaseConfig(BaseSettings):
 
     DB_HOST: str = Field(env="DB_HOST", default="127.0.0.1")
     DB_PORT: int = Field(env="DB_PORT", default="3306")
+    DB_USERNAME: str = Field(env="DB_USERNAME", default="root")
+    DB_PASSWORD: str = Field(env="DB_PASSWORD", default="root")
     DATABASE: str = Field(env="DATABASE", default="heymoji")
-    DB_USERNAME: str = Field(env="DB_USERNAME")
-    DB_PASSWORD: str = Field(env="DB_PASSWORD")
 
-    DAY_MAX_REACTION: int = Field(env="DAY_MAX_REACTION", default=1000)
+    SPECIAL_EMOJI: Optional[str] = Field(env="SPECIAL_EMOJI", default=None)
     REACTION_LIST: list = Field(env="REACTION_LIST", default=['heart'])
     SLACK_TOKEN: str = Field(env="SLACK_TOKEN")
     ERROR_CHANNEL: str = Field(env="ERROR_CHANNEL")

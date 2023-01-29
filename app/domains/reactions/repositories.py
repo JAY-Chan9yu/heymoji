@@ -34,6 +34,7 @@ class ReactionRepository(GenericRepository):
             results = await session.execute(q)
             for result in results:
                 return Reaction(**result[0].__dict__)
+        return None
 
     async def get_by_slack_id_and_date(self, slack_id: str, year: int, month: int) -> List[Reaction]:
         q = select(self.model).options(
@@ -102,6 +103,8 @@ class ReactionRepository(GenericRepository):
             for result in results:
                 return Reaction(**result[0].__dict__)
 
+        return None
+
     async def insert(self, reaction: Reaction):
         q = insert(self.model).values(reaction.entity_to_data())
         async with async_session_manager() as session:
@@ -129,3 +132,18 @@ class ReactionRepository(GenericRepository):
                 reactions.append(Reaction(**result[0].__dict__))
 
         return reactions
+
+    # async def count_given_special_emoji_by_date_and_user(self, from_user_id: int, year: int, month: int):
+    #     speacial_emoji = settings.config.SPECIAL_EMOJI
+    #     q = select(
+    #         self.model
+    #     ).filter(
+    #         self.model.year == year,
+    #         self.model.month == month,
+    #         self.model.from_user == from_user_id,
+    #     ).count()
+    #
+    #     async with async_session_manager() as session:
+    #         results = await session.execute(q)
+    #
+    #     return results

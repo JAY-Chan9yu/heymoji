@@ -62,7 +62,7 @@ class SlackMentionHook(BaseSlackEventHook):
 
 
 class SlackBotDirectMessageHook(BaseSlackEventHook):
-    """슬랙 멘션 이벤트 웹훅 스키마"""
+    """슬랙 봇 다이렉트 메세지 웹훅 스키마"""
     event: SlackBotEvent = Field(title='이벤트 상세')
 
 

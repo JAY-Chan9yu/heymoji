@@ -1,10 +1,11 @@
+from pydantic import BaseModel
 from starlette.requests import Request
 
 from app.applications.schemas import SlackChallengeHook, SlackMentionHook, SlackEventHook, SlackBotDirectMessageHook
 from app.domains.reactions.entities import SlackEventType
 
 
-async def get_slack_event(request: Request):
+async def get_slack_event(request: Request) -> BaseModel:
     request = await request.json()
     if request.get('challenge'):
         return SlackChallengeHook(**request)

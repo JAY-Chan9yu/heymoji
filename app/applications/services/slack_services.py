@@ -30,7 +30,7 @@ class SlackService:
     ) -> Optional[SlackChallengeHookResponse]:
         # 슬랙봇 DM 예외처리
         if type(slack_event) == SlackBotDirectMessageHook:
-            return
+            return None
         # 슬랙 웹훅 인증
         elif type(slack_event) == SlackChallengeHook:
             return SlackChallengeHookResponse(challenge=slack_event.challenge)
