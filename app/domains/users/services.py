@@ -1,9 +1,13 @@
+import logging
 from contextlib import asynccontextmanager
 from typing import Optional, List
 
 from app.domains.users.entities import User, UserDetailInfo
 from app.domains.users.repositories import UserRepository
 from conf import settings
+
+
+logger = logging.getLogger(__name__)
 
 
 class UserService:
@@ -29,7 +33,7 @@ class UserService:
     async def create_user(cls, attr: dict) -> User:
         user = await cls.get_by_slack_id(slack_id=attr['slack_id'])
         if user:
-            return
+            return user
 
         return await cls._user_repository().insert(User(
             username=attr.get('name'),
@@ -63,6 +67,6 @@ async def user_check_manager(attr):
 
     try:
         yield user
-    except Exception as err:
-        print(err)
+    except Exception as e:
+        logger.error(f"[user_check_manager] {e}")
         return

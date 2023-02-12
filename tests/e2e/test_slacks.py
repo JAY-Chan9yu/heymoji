@@ -4,7 +4,7 @@ import pytest
 
 from app.domains.users.repositories import UserModel
 from tests.conftest import truncate_tables, test_engine
-from tests.helpers.model_factories import  UserModelFactory
+from tests.helpers.model_factories import UserModelFactory
 from tests.helpers.randoms import get_random_string
 
 
@@ -28,12 +28,14 @@ class TestSlackApi:
         assert response.status_code == 200
 
     @pytest.mark.asyncio
-    async def test_slack_handler_by_challenge(self, db, anyio_backend, test_client, mock_bot_direct_message_request):
+    async def test_slack_handler_by_direct_message(
+        self, db, anyio_backend, test_client, mock_bot_direct_message_request
+    ):
         response = await test_client.post("/slack/")
         assert response.status_code == 200
 
     @pytest.mark.asyncio
-    async def test_slack_handler_by_challenge(self, db, anyio_backend, mock_allowed_emoji, test_client):
+    async def test_slack_handler_by_add_reacton(self, db, anyio_backend, mock_allowed_emoji, test_client):
         truncate_tables(["reactions"])
         body = {
             "event": {

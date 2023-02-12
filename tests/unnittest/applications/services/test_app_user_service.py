@@ -74,7 +74,7 @@ class TestAppUserService:
             "avatar_url": "yoyo",
             "department": "gag-team"
         })
-        assert user is None
+        assert user.slack_id == slack_id
 
     @pytest.mark.asyncio
     async def test_update_user(self, db, anyio_backend):

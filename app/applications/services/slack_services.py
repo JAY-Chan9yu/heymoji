@@ -1,4 +1,5 @@
 import asyncio
+import logging
 from typing import Union, Optional, Callable
 
 from app.applications.schemas import SlackEventHook, SlackMentionHook, SlackChallengeHook, SlackEvent, \
@@ -10,6 +11,8 @@ from app.utils.slack_message_format import get_command_error_msg, get_help_msg, 
 from app.utils.utils import slack_command_exception_handler, parsing_slack_command_to_dict, send_slack_msg
 from conf import settings
 
+
+logger = logging.getLogger(__name__)
 
 SLACK_EVENT_HOOKS = Union[
     SlackEventHook,
@@ -78,6 +81,7 @@ class SlackService:
 
         # 존재하지 않는 명령어인 경우
         if func is None:
+            logger.error(f"[mention_command_handler] Not exists command : {cmd}")
             # send_slack_msg(channel=event.channel, blocks=get_command_error_msg())
             return
 
@@ -106,9 +110,14 @@ class SlackService:
     @classmethod
     async def send_best_user_list_to_slack(cls, **kwargs):
         mapped_attr = kwargs.get('mapped_attr')
-        event = kwargs.get('event')
-        year = int(mapped_attr.get('year'))
-        month = int(mapped_attr.get('month'))
+
+        try:
+            event = kwargs.get('event')
+            year = int(mapped_attr.get('year'))
+            month = int(mapped_attr.get('month'))
+        except TypeError:
+            logger.error(f"[send_best_user_list_to_slack] TypeError : {mapped_attr}")
+            return
 
         try:
             best_users = await cls._reaction_app_service.get_this_month_best_users(year, month)
@@ -116,8 +125,8 @@ class SlackService:
                 channel=event.channel,
                 blocks=get_best_user_format(f"{year}년 {month}월 베스트 멤버", best_users)
             )
-        except Exception as err:
-            print(err)
+        except Exception as e:
+            logger.error(f"[send_best_user_list_to_slack] best user logic error : {e}")
             return
 
     @classmethod
