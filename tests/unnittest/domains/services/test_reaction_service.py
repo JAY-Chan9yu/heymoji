@@ -143,16 +143,14 @@ class TestReactionService:
         assert user_received_emoji_info.emoji_infos[0].count == 5
 
     @pytest.mark.asyncio
-    async def test_update_or_create_reaction_when_reaction_is_none(self, db, anyio_backend):
+    async def test_increase_when_reaction_is_none(self, db, anyio_backend):
         truncate_tables(["reactions"])
-        is_updated = await self.service.update_or_create_reaction(
-            event_type=SlackEventType.ADDED_REACTION,
+        await self.service.add_reaction(
             emoji="test",
             send_user_id=self.other_user.id,
             received_user_id=self.user.id,
             reaction=None
         )
-        assert is_updated is True
 
         reaction: Reaction = await self.service.get_reaction_by_emoji(
             emoji="test",
@@ -165,7 +163,7 @@ class TestReactionService:
         assert reaction.from_user_id == self.other_user.id
 
     @pytest.mark.asyncio
-    async def test_update_or_create_reaction_when_reaction_is_not_none(self, db, anyio_backend):
+    async def test_increase_reaction_when_reaction_is_not_none(self, db, anyio_backend):
         truncate_tables(["reactions"])
         ReactionModelFactory(db).build(
             to_user_id=self.user.id,
@@ -178,32 +176,18 @@ class TestReactionService:
             send_user_id=self.other_user.id,
         )
 
-        is_updated = await self.service.update_or_create_reaction(
-            event_type=SlackEventType.ADDED_REACTION,
+        await self.service.add_reaction(
             emoji="test",
             send_user_id=self.other_user.id,
             received_user_id=self.user.id,
             reaction=reaction
         )
-        assert is_updated is True
         assert reaction.count == 2
         assert reaction.to_user_id == self.user.id
         assert reaction.from_user_id == self.other_user.id
 
     @pytest.mark.asyncio
-    async def test_update_or_create_reaction_when_event_type_is_not_added_reaction(self, db, anyio_backend):
-        truncate_tables(["reactions"])
-        is_updated = await self.service.update_or_create_reaction(
-            event_type=SlackEventType.REMOVED_REACTION,
-            emoji="test",
-            send_user_id=self.other_user.id,
-            received_user_id=self.user.id,
-            reaction=None
-        )
-        assert is_updated is False
-
-    @pytest.mark.asyncio
-    async def test_update_reaction_count_when_add_reaction(self, db, anyio_backend):
+    async def test_increase_reaction_when_add_reaction(self, db, anyio_backend):
         truncate_tables(["reactions"])
         ReactionModelFactory(db).build(
             to_user_id=self.user.id,
@@ -216,10 +200,7 @@ class TestReactionService:
             send_user_id=self.other_user.id,
         )
 
-        await self.service.update_reaction_count(
-            event_type=SlackEventType.ADDED_REACTION,
-            reaction=reaction
-        )
+        await self.service.add_reaction(reaction=reaction)
         reaction: Reaction = await self.service.get_reaction_by_emoji(
             emoji="test",
             received_user_id=self.user.id,
@@ -228,7 +209,7 @@ class TestReactionService:
         assert reaction.count == 2
 
     @pytest.mark.asyncio
-    async def test_update_reaction_count_when_remove_reaction(self, db, anyio_backend):
+    async def test_remove_reaction(self, db, anyio_backend):
         truncate_tables(["reactions"])
         ReactionModelFactory(db).build(
             to_user_id=self.user.id,
@@ -240,11 +221,9 @@ class TestReactionService:
             received_user_id=self.user.id,
             send_user_id=self.other_user.id,
         )
+        assert reaction.count == 1
 
-        await self.service.update_reaction_count(
-            event_type=SlackEventType.REMOVED_REACTION,
-            reaction=reaction
-        )
+        await self.service.remove_reaction(reaction=reaction)
         reaction: Reaction = await self.service.get_reaction_by_emoji(
             emoji="test",
             received_user_id=self.user.id,

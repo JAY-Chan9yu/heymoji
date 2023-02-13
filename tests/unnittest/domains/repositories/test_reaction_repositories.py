@@ -8,6 +8,7 @@ from app.domains.reactions.repositories import ReactionRepository, ReactionModel
 from app.domains.users.repositories import UserModel
 from tests.conftest import truncate_tables, test_engine
 from tests.helpers.model_factories import UserModelFactory, ReactionModelFactory
+from tests.helpers.randoms import get_random_string
 
 
 @pytest.mark.parametrize('anyio_backend', ['asyncio'])
@@ -158,23 +159,50 @@ class TestReactionRepository:
             assert reaction.emoji == f"emoji-{i}"
 
     @pytest.mark.asyncio
-    async def test_count_given_special_emoji_by_date_and_user(self, db, anyio_backend):
+    async def test_count_special_emoji_by_date_and_from_user(self, db, anyio_backend):
         truncate_tables(["reactions"])
         now = datetime.now()
-        total_reaction_cnt = 5
 
-        for i in range(0, total_reaction_cnt):
-            ReactionModelFactory(db).build(
-                to_user_id=self.user.id,
-                from_user_id=self.other_user.id,
-                emoji=f"emoji-{i}"
-            )
-
-        reactions: List = await self.repository.get_monthly_reactions_by_to_user_id(
+        reaction = ReactionModelFactory(db).build(
             to_user_id=self.user.id,
+            from_user_id=self.other_user.id,
+            emoji=f"special"
+        )
+        # update reaction count
+        reaction.count = 3
+        await self.repository.update(Reaction(**reaction.__dict__))
+
+        # create other user emoji
+        other_user2: UserModel = UserModelFactory(test_engine).build(**{
+            "slack_id": get_random_string(),
+            "username": "test-other-user2"
+        })
+        ReactionModelFactory(db).build(
+            to_user_id=other_user2.id,
+            from_user_id=self.other_user.id,
+            emoji=f"special"
+        )
+
+        # create normal emoji reaction
+        ReactionModelFactory(db).build(
+            to_user_id=self.user.id,
+            from_user_id=self.other_user.id,
+            emoji=f"heart"
+        )
+
+        can_give_emoji = await self.repository.count_special_emoji_by_date_and_from_user(
+            from_user_id=self.other_user.id,
             month=now.month,
             year=now.year
         )
-        assert len(reactions) == total_reaction_cnt
-        for i, reaction in enumerate(reactions):
-            assert reaction.emoji == f"emoji-{i}"
+        assert can_give_emoji == 4
+
+        # update reaction count
+        reaction.count = 4
+        await self.repository.update(Reaction(**reaction.__dict__))
+        can_give_emoji = await self.repository.count_special_emoji_by_date_and_from_user(
+            from_user_id=self.other_user.id,
+            month=now.month,
+            year=now.year
+        )
+        assert can_give_emoji == 5

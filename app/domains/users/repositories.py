@@ -38,6 +38,7 @@ class UserRepository(GenericRepository):
         return None
 
     async def get_all_users(self) -> List[User]:
+        # todo: pagination 추가하기
         users = []
         q = select(self.model)
         async with async_session_manager() as session:
@@ -53,7 +54,13 @@ class UserRepository(GenericRepository):
         return user
 
     async def update(self, user: User):
-        q = update(self.model).filter(self.model.id == user.id).values(user.entity_to_data())
+        q = update(
+            self.model
+        ).filter(
+            self.model.id == user.id
+        ).values(
+            user.entity_to_data()
+        )
         async with async_session_manager() as session:
             await session.execute(q)
 

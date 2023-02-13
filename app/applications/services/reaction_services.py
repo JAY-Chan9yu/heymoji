@@ -19,10 +19,10 @@ class ReactionAppService:
         다른 유저가 보낸 이모지 리액션 업데이트
         """
         send_user = await cls._user_app_service.get_user(slack_id=event.user)
-        received_user = await cls._user_app_service().get_user(slack_id=event.item_user)
+        received_user = await cls._user_app_service.get_user(slack_id=event.item_user)
 
         # 리액션을 send, receive 한 유저 모두 존재해야 한다
-        if send_user is None or received_user is None:
+        if not all([send_user, received_user]):
             return
 
         await cls._update_or_create_reaction_of_received_user(
@@ -41,19 +41,23 @@ class ReactionAppService:
         """
         리액션을 받은 유저의 Reaction 을 업데이트 하거나 새로 생성
         """
-        event_type = SlackEventType(event.type)
         reaction = await cls._reaction_domain_service.get_reaction_by_emoji(
             emoji=event.reaction,
             received_user_id=received_user.id,
             send_user_id=send_user.id
         )
-        await cls._reaction_domain_service.update_or_create_reaction(
-            reaction=reaction,
-            event_type=event_type,
-            emoji=event.reaction,
-            send_user_id=send_user.id,
-            received_user_id=received_user.id
-        )
+
+        if cls.is_add_reaction(SlackEventType(event.type)):
+            await cls._reaction_domain_service.add_reaction(
+                reaction=reaction,
+                emoji=event.reaction,
+                send_user_id=send_user.id,
+                received_user_id=received_user.id
+            )
+        elif reaction:
+            await cls._reaction_domain_service.remove_reaction(
+                reaction=reaction
+            )
 
     @classmethod
     async def get_received_emoji_infos(
@@ -108,3 +112,7 @@ class ReactionAppService:
                     continue
 
         return best_users
+
+    @staticmethod
+    def is_add_reaction(event_type: SlackEventType) -> bool:
+        return event_type == SlackEventType.ADDED_REACTION

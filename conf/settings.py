@@ -21,7 +21,8 @@ class BaseConfig(BaseSettings):
     DB_PASSWORD: str = Field(env="DB_PASSWORD", default="root")
     DATABASE: str = Field(env="DATABASE", default="heymoji")
 
-    SPECIAL_EMOJI: Optional[str] = Field(env="SPECIAL_EMOJI", default=None)
+    SPECIAL_EMOJI: Optional[str] = Field(env="SPECIAL_EMOJI", default="heart")
+    LIMIT_GIVE_COUNT_OF_SPECIAL_EMOJI: int = Field(env="LIMIT_GIVE_COUNT_OF_SPECIAL_EMOJI", default=5)
     REACTION_LIST: list = Field(env="REACTION_LIST", default=['heart'])
     SLACK_TOKEN: str = Field(env="SLACK_TOKEN")
     ERROR_CHANNEL: str = Field(env="ERROR_CHANNEL")

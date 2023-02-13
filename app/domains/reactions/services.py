@@ -7,6 +7,10 @@ from conf import settings
 from seed_work.services import GenericService
 
 
+class IncreaseReactionException(Exception):
+    ...
+
+
 class ReactionService(GenericService):
     _repository = ReactionRepository
 
@@ -112,18 +116,19 @@ class ReactionService(GenericService):
         return user_received_emoji_info
 
     @classmethod
-    async def update_or_create_reaction(
+    async def add_reaction(
         cls,
-        event_type: SlackEventType,
-        emoji: str,
-        send_user_id: int,
-        received_user_id: int,
+        emoji: Optional[str] = None,
+        send_user_id: Optional[int] = None,
+        received_user_id: Optional[int] = None,
         reaction: Optional[Reaction] = None
-    ) -> bool:
+    ):
+        if all([emoji, send_user_id, received_user_id]) is False and reaction is None:
+            raise IncreaseReactionException
+
         if reaction:
-            await cls.update_reaction_count(reaction, event_type)
-            return True
-        elif reaction is None and event_type == SlackEventType.ADDED_REACTION:
+            await cls._increase_reaction_count(reaction)
+        else:
             now = datetime.datetime.now()
             await cls.create_reaction(
                 year=now.year,
@@ -132,14 +137,33 @@ class ReactionService(GenericService):
                 to_user_id=received_user_id,
                 from_user_id=send_user_id
             )
-            return True
-        else:
-            return False
 
     @classmethod
-    async def update_reaction_count(cls, reaction: Reaction, event_type: SlackEventType):
-        reaction.update_count(event_type)
+    async def remove_reaction(cls, reaction: Optional[Reaction] = None):
+        await cls._decrease_reaction_count(reaction)
+
+    @classmethod
+    async def _increase_reaction_count(cls, reaction: Reaction):
+        if cls.is_special_emoji(reaction.emoji):
+            can_add_special_emoji = await cls._can_increase_special_emoji(reaction)
+            if not can_add_special_emoji:
+                return
+        reaction.increase_count()
         await cls._repository().update(reaction)
+
+    @classmethod
+    async def _decrease_reaction_count(cls, reaction: Reaction):
+        reaction.decrease_count()
+        await cls._repository().update(reaction)
+
+    @classmethod
+    async def _can_increase_special_emoji(cls, reaction: Reaction) -> bool:
+        count = await cls._repository().count_special_emoji_by_date_and_from_user(
+            from_user_id=reaction.from_user_id,
+            year=reaction.year,
+            month=reaction.month
+        )
+        return count < settings.config.LIMIT_GIVE_COUNT_OF_SPECIAL_EMOJI
 
     @classmethod
     async def create_reaction(cls, **kwargs):
@@ -171,5 +195,5 @@ class ReactionService(GenericService):
         return '👻'
 
     @staticmethod
-    def is_special_emoji(emoji: str):
-        return settings.config.SPECIAL_EMOJI == emoji
+    def is_special_emoji(emoji: str) -> bool:
+        return emoji == settings.config.SPECIAL_EMOJI
