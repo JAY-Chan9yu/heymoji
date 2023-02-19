@@ -11,7 +11,7 @@ async def get_slack_event(request: Request):
     try:
         request_data = await request.json()
     except JSONDecodeError:
-        raise HTTPException(status_code=403, detail="request body can not be none")
+        raise HTTPException(status_code=400, detail="request body can not be none")
     
     if request_data.get('challenge'):
         return SlackChallengeHook(**request_data)
