@@ -10,39 +10,40 @@ from conf import settings
 
 
 Base = declarative_base()
-_async_db_connection: AsyncEngine = Optional[AsyncEngine]
-_db_connection: Engine = Optional[Engine]
+async_db_connection: Optional[AsyncEngine] = None
+db_connection: Optional[Engine] = None
+
+db_url = f"{settings.config.DB_USERNAME}:{settings.config.DB_PASSWORD}" \
+         f"@{settings.config.DB_HOST}:{settings.config.DB_PORT}/{settings.config.DATABASE}"
 
 
 def on_startup():
     # todo: 동기, 비동기 하나만 사용하도록 조건 넣기 or 환경변수 주입으로?
-    global _async_db_connection
-    global _db_connection
+    global async_db_connection
+    global db_connection
 
-    _async_db_connection = create_async_engine(
-        f'mysql+aiomysql://{settings.config.DB_USERNAME}:{settings.config.DB_PASSWORD}'
-        f'@{settings.config.DB_HOST}:{settings.config.DB_PORT}/{settings.config.DATABASE}',
+    async_db_connection = create_async_engine(
+        f'mysql+aiomysql://{db_url}',
         echo=True if settings.config.ENV != settings.HeymojiEnv.PROD.value else False,
         future=True
     )
 
-    _db_connection = create_engine(
-        f'mysql+pymysql://{settings.config.DB_USERNAME}:{settings.config.DB_PASSWORD}'
-        f'@{settings.config.DB_HOST}:{settings.config.DB_PORT}/{settings.config.DATABASE}',
+    db_connection = create_engine(
+        f'mysql+pymysql://{db_url}',
         echo=True if settings.config.ENV != settings.HeymojiEnv.PROD.value else False,
         # connect_args={"check_same_thread": False}
     )
 
 
 def on_shutdown():
-    global _async_db_connection
-    global _db_connection
+    global async_db_connection
+    global db_connection
 
-    if _async_db_connection:
-        _async_db_connection.dispose()
+    if async_db_connection:
+        async_db_connection.dispose()
 
-    if _db_connection:
-        _db_connection.dispose()
+    if db_connection:
+        db_connection.dispose()
 
 
 class MysqlConnectionManager:
@@ -55,14 +56,14 @@ class MysqlConnectionManager:
                 cls._client = scoped_session(sessionmaker(
                     autocommit=False,
                     autoflush=False,
-                    bind=_async_db_connection,
-                    class_=AsyncSession(bind=_async_db_connection, expire_on_commit=True)
+                    bind=async_db_connection,
+                    class_=AsyncSession(bind=async_db_connection, expire_on_commit=True)
                 ))
             else:
                 cls._client = scoped_session(sessionmaker(
                     autocommit=False,
                     autoflush=False,
-                    bind=_db_connection,
+                    bind=db_connection,
                     class_=Session
                 ))
 
@@ -71,7 +72,16 @@ class MysqlConnectionManager:
 
 @asynccontextmanager
 async def async_session_manager() -> AsyncSession:
-    session = AsyncSession(bind=_async_db_connection, expire_on_commit=True)
+    global async_db_connection
+
+    if not async_db_connection:
+        async_db_connection = create_async_engine(
+            f'mysql+aiomysql://{db_url}',
+            echo=True if settings.config.ENV != settings.HeymojiEnv.PROD.value else False,
+            future=True
+        )
+
+    session = AsyncSession(bind=async_db_connection, expire_on_commit=True)
 
     try:
         yield session

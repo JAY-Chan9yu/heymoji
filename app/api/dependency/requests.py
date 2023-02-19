@@ -3,9 +3,10 @@ from starlette.requests import Request
 from fastapi import HTTPException
 
 from app.applications.schemas import SlackChallengeHook, SlackMentionHook, SlackEventHook, SlackBotDirectMessageHook
+from app.applications.services.slack_services import SLACK_EVENT_HOOKS
 from app.domains.reactions.entities import SlackEventType
 
-async def get_slack_event(request: Request):
+async def get_slack_event(request: Request) -> SLACK_EVENT_HOOKS:
     
     request_data: dict
     try:

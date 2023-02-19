@@ -1,4 +1,5 @@
 import json
+import logging
 from typing import Callable, Any
 
 import requests
@@ -8,9 +9,14 @@ from app.utils.slack_message_format import get_error_msg
 from conf import settings
 
 
-def mapping_slack_command_to_dict(event: SlackMentionEvent) -> (CommandType, dict):
-    # 기본적으로 reaction 한 유저의 slack_id 를 사용한다
-    mapped_attr = {'slack_id': event.user}
+logger = logging.getLogger(__name__)
+
+
+def parsing_slack_command_to_dict(event: SlackMentionEvent) -> (CommandType, dict):
+    """
+    슬랙 명령어를 파싱하는 함수
+    """
+    mapped_attr = {'slack_id': event.user}  # reaction 한 유저의 slack_id 를 사용
 
     try:
         event_command = event.text.split()
@@ -32,8 +38,8 @@ def mapping_slack_command_to_dict(event: SlackMentionEvent) -> (CommandType, dic
                 value = info[1]
 
             mapped_attr[key] = value
-        except:
-            continue
+        except Exception as e:
+            logger.error(f"[parsing_slack_command_to_dict] {e}")
 
     return cmd, mapped_attr
 
