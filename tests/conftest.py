@@ -96,7 +96,7 @@ def mock_allowed_emoji():
 @pytest.fixture(scope='function')
 def mock_reaction_list():
     with mock.patch(
-        'app.applications.services.slack_services.settings.config.REACTION_LIST',
+        'app.applications.services.slack_services.settings.config.ALLOWED_REACTION_LIST',
         ["pray", "heart", "eye_shaking", "+1", "kkkk", "special"]
     ) as reaction_list:
         yield reaction_list

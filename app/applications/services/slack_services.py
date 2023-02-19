@@ -64,7 +64,7 @@ class SlackService:
 
     @staticmethod
     def _is_allowed_reaction(reaction: str) -> bool:
-        return reaction in settings.config.REACTION_LIST
+        return reaction in settings.config.ALLOWED_REACTION_LIST
 
     @classmethod
     async def mention_command_handler(cls, event: SlackMentionEvent):

@@ -12,6 +12,19 @@ def get_best_user_format(title: str, best_users: dict) -> list:
         },
         {
             "type": "section",
+            "block_id": "section560",
+            "text": {
+                "type": "mrkdwn",
+                "text": f"이번 달 우리회사 최고의 크루는?! *{best_users.get('🏆️', '🙈')}*\n:trophy:"
+            },
+            "accessory": {
+                "type": "image",
+                "image_url": "https://storage.googleapis.com/jjalbot/2018/12/SJIet6EMlE/20180120_5a62ff609dd71.gif",
+                "alt_text": "Haunted hotel image"
+            }
+        },
+        {
+            "type": "section",
             "block_id": "section567",
             "text": {
                 "type": "mrkdwn",
@@ -19,7 +32,7 @@ def get_best_user_format(title: str, best_users: dict) -> list:
             },
             "accessory": {
                 "type": "image",
-                "image_url": "https://i.pinimg.com/originals/bf/88/4c/bf884cb9b29803db712b77f1bce4f462.jpg",
+                "image_url": "https://storage.googleapis.com/jjalbot/2018/12/SklaU6EzxN/20180920_5ba2faf231e8d.gif",
                 "alt_text": "Haunted hotel image"
             }
         },
@@ -32,7 +45,7 @@ def get_best_user_format(title: str, best_users: dict) -> list:
             },
             "accessory": {
                 "type": "image",
-                "image_url": "https://t1.daumcdn.net/cfile/tistory/99E10D3F5ADC079602",
+                "image_url": "https://storage.googleapis.com/jjalbot/2018/12/H1U2e0EMgN/20161011_57fc9949dc934.gif",
                 "alt_text": "Haunted hotel image"
             }
         },
@@ -45,7 +58,7 @@ def get_best_user_format(title: str, best_users: dict) -> list:
             },
             "accessory": {
                 "type": "image",
-                "image_url": "http://images.goodoc.kr/images/article/2018/08/20/428733/43bedd6ad60a_3bbaf99a964d.png",
+                "image_url": "https://storage.googleapis.com/jjalbot/2019/01/HzRhFU0V79/GFA042s4h.gif",
                 "alt_text": "Haunted hotel image"
             }
         },
@@ -59,7 +72,7 @@ def get_best_user_format(title: str, best_users: dict) -> list:
             },
             "accessory": {
                 "type": "image",
-                "image_url": "https://cdn.clien.net/web/api/file/F03/11193449/82140da86eecc4.jpg?w=500&h=1000",
+                "image_url": "https://storage.googleapis.com/jjalbot/2016/10/BkZLvLpI0/20160901_57c79d42cb647.gif",
                 "alt_text": "Haunted hotel image"
             }
         },
@@ -72,7 +85,7 @@ def get_best_user_format(title: str, best_users: dict) -> list:
             },
             "accessory": {
                 "type": "image",
-                "image_url": "https://d2u3dcdbebyaiu.cloudfront.net/uploads/atch_img/693/6ebb2cf8ed8a3f6cdebe2f6aedc640e6.jpeg",
+                "image_url": "https://storage.googleapis.com/jjalbot/2018/12/L0XKZHmhX/zzal.gif",
                 "alt_text": "Haunted hotel image"
             }
         },

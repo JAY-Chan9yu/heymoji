@@ -23,7 +23,7 @@ class BaseConfig(BaseSettings):
 
     SPECIAL_EMOJI: Optional[str] = Field(env="SPECIAL_EMOJI", default="trophy")
     LIMIT_GIVE_COUNT_OF_SPECIAL_EMOJI: int = Field(env="LIMIT_GIVE_COUNT_OF_SPECIAL_EMOJI", default=5)
-    REACTION_LIST: list = Field(env="REACTION_LIST", default=['heart'])
+    ALLOWED_REACTION_LIST: list = Field(env="ALLOWED_REACTION_LIST", default=['heart'])
     SLACK_TOKEN: str = Field(env="SLACK_TOKEN")
     ERROR_CHANNEL: str = Field(env="ERROR_CHANNEL")
     BOT_NAME: str = Field(env="BOT_NAME")
