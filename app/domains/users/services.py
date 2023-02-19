@@ -1,9 +1,13 @@
+import logging
 from contextlib import asynccontextmanager
 from typing import Optional, List
 
-from app.domains.users.entities import User
+from app.domains.users.entities import User, UserDetailInfo
 from app.domains.users.repositories import UserRepository
 from conf import settings
+
+
+logger = logging.getLogger(__name__)
 
 
 class UserService:
@@ -14,11 +18,11 @@ class UserService:
         return await cls._user_repository().get_by_slack_id(slack_id)
 
     @classmethod
-    async def get_by_id(cls, _id: int):
+    async def get_by_id(cls, _id: int) -> Optional[User]:
         return await cls._user_repository().get_by_id(_id)
 
     @classmethod
-    async def get_detail_user(cls, **kwargs):
+    async def get_detail_user(cls, **kwargs) -> List[UserDetailInfo]:
         return await cls._user_repository().get_detail_info(**kwargs)
 
     @classmethod
@@ -26,10 +30,10 @@ class UserService:
         return await cls._user_repository().get_all_users()
 
     @classmethod
-    async def create_user(cls, attr: dict):
+    async def create_user(cls, attr: dict) -> User:
         user = await cls.get_by_slack_id(slack_id=attr['slack_id'])
         if user:
-            return
+            return user
 
         return await cls._user_repository().insert(User(
             username=attr.get('name'),
@@ -56,11 +60,6 @@ class UserService:
             user.show_user()
             await cls._user_repository().update(user)
 
-    @classmethod
-    async def update_my_reaction(cls, user: User, is_increase: bool):
-        user.decrease_my_reaction() if is_increase else user.increase_my_reaction()
-        return await cls._user_repository().update(user)
-
 
 @asynccontextmanager
 async def user_check_manager(attr):
@@ -68,6 +67,6 @@ async def user_check_manager(attr):
 
     try:
         yield user
-    except Exception as err:
-        print(err)
+    except Exception as e:
+        logger.error(f"[user_check_manager] {e}")
         return

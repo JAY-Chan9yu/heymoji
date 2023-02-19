@@ -33,6 +33,8 @@ export default {
           return '❤️'
         case '+1':
           return '👍'
+        case 'trophy':
+          return '🏆'
         default:
           return '💖'
       }

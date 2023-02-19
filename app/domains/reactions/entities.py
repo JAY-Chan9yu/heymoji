@@ -41,15 +41,6 @@ class Reaction(AggregateRoot):
         data.pop('from_user')
         return data
 
-    def update_count(self, event_type: SlackEventType):
-        if event_type not in [SlackEventType.ADDED_REACTION, SlackEventType.REMOVED_REACTION]:
-            return
-
-        if event_type == SlackEventType.ADDED_REACTION:
-            self.increase_count()
-        elif event_type == SlackEventType.REMOVED_REACTION:
-            self.decrease_count()
-
     def decrease_count(self):
         if self.count > 0:
             self.count -= 1
