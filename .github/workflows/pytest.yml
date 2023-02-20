@@ -34,7 +34,6 @@ jobs:
         
     - name: Start Pytest
       run: |
-        pytest --cache-clear |tee pytest-coverage.txt
-
+        pytest --cache-clear --cov=./ |tee pytest-coverage.txt
     - name: Comment coverage
       uses: coroo/pytest-coverage-commentator@v1.0.2
