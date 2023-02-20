@@ -10,10 +10,9 @@ jobs:
   build:
     runs-on: ubuntu-20.04
     services:
-      mariadb:
+      mysql:
         image: mysql:latest
         env:
-          MYSQL_USER: root
           MYSQL_PASSWORD: root
           MYSQL_DATABASE: test_heymoji
           MYSQL_ROOT_PASSWORD: root
