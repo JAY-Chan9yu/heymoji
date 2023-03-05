@@ -2,8 +2,7 @@
 <img src="https://user-images.githubusercontent.com/24591259/210239909-7dab9b9a-f796-4495-a58d-091d25e0dc7c.png"/>
 </p>
 
-<img src="https://img.shields.io/badge/coverage-93%25-green">
-<img src="https://img.shields.io/badge/python-3.10-orange">
+<img src="https://img.shields.io/badge/coverage-93%25-green"><img src="https://img.shields.io/badge/python-3.10-orange">
 
 # Hey + Emoji = Heymoji
 
