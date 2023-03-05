@@ -21,13 +21,27 @@ class BaseConfig(BaseSettings):
     DB_PASSWORD: str = Field(env="DB_PASSWORD", default="root")
     DATABASE: str = Field(env="DATABASE", default="heymoji")
 
+    SLACK_TOKEN: str = Field(env="SLACK_TOKEN", default="")
+    ERROR_CHANNEL: str = Field(env="ERROR_CHANNEL", default="")
+    BOT_NAME: str = Field(env="BOT_NAME", default="heymojiBOT")
+
     SPECIAL_EMOJI: Optional[str] = Field(env="SPECIAL_EMOJI", default="trophy")
     LIMIT_GIVE_COUNT_OF_SPECIAL_EMOJI: int = Field(env="LIMIT_GIVE_COUNT_OF_SPECIAL_EMOJI", default=5)
-    ALLOWED_REACTION_LIST: list = Field(env="ALLOWED_REACTION_LIST", default=['heart'])
-    SLACK_TOKEN: str = Field(env="SLACK_TOKEN")
-    ERROR_CHANNEL: str = Field(env="ERROR_CHANNEL")
-    BOT_NAME: str = Field(env="BOT_NAME")
-    ALLOWED_EMOJI_TYPES: list = Field(env="ALLOWED_EMOJI_TYPES", default=[])
+    ALLOWED_REACTION_LIST: list = Field(
+        env="ALLOWED_REACTION_LIST",
+        default=["pray", "heart", "eye_shaking", "+1", "기도", "기쁨", "kkkk", "trophy", "트로피"]
+    )
+    ALLOWED_EMOJI_TYPES: list = Field(
+        env="ALLOWED_EMOJI_TYPES",
+        default=[
+            {"emoji": "❤️", "emoji_names": ["heart"]},
+            {"emoji": "🤣", "emoji_names": ["kkkk", "기쁨"]},
+            {"emoji": "🙏️", "emoji_names": ["pray", "기도"]},
+            {"emoji": "👍", "emoji_names": ["+1"]},
+            {"emoji": "👀️", "emoji_names": ["eye_shaking"]},
+            {"emoji": "🏆️", "emoji_names": ["trophy", "트로피"]}
+        ]
+    )
 
     RANK_URL: str = Field(env="RANK_URL", default="")
     DEFAULT_AVATAR_URL: str = Field(
