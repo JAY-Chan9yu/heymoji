@@ -15,7 +15,7 @@ class BaseConfig(BaseSettings):
     ENV: str = Field(env="ENV", default=HeymojiEnv.DEV.value)
     ALLOW_ORIGINS: list = Field(env="ALLOW_ORIGINS", default=['*'])
 
-    DB_HOST: str = Field(env="DB_HOST", default="127.0.0.1")
+    DB_HOST: str = Field(env="DB_HOST", default="heymoji-db")
     DB_PORT: int = Field(env="DB_PORT", default="3306")
     DB_USERNAME: str = Field(env="DB_USERNAME", default="root")
     DB_PASSWORD: str = Field(env="DB_PASSWORD", default="root")
