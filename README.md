@@ -75,24 +75,24 @@ DDD에 대한 스터디를 위해 구조를 변경했으며 https://github.com/E
 DB는 `MySQL`을 사용하며 비동기 처리를 위해 `aiomysql`라이브러리를 함께 사용합니다.<br/>
 다른 DB 사용하려면 `config` 설정이 조금 달라질 수 있습니다.
 
-| 이름                                | 설명                                  |
-|-----------------------------------|-------------------------------------|
-| ENV                               | 배포환경 정의                             |
-| ALLOW_ORIGINS                     | CORS를 허용할 ORIGIN 리스트                |
-| DB_HOST                           | DB 호스트                              |
-| DB_PORT                           | DB 포트                               |
-| DATABASE                          | DB 이름                               |
-| DB_USERNAME                       | DB 접속 유저네임                          |
-| DB_PASSWORD                       | DB 패스워드                             |
-| SLACK_TOKEN                       | 슬랙 토큰                               |
-| BOT_NAME                          | 슬랙봇 이름                              |
-| ERROR_CHANNEL                     | 슬랙 에러 리포팅 채널                        |
-| SPECIAL_EMOJI                     | 특별한 의미를 가진 이모지                      |
-| LIMIT_GIVE_COUNT_OF_SPECIAL_EMOJI | 하루에 남길수 있는 SPECIAL_EMOJI 최대 개수      |
-| ALLOWED_REACTION_LIST             | 웹훅 리액션으로 허용된 이모지(reaction)들을 정의합니다. |
-| ALLOWED_EMOJI_TYPES               | 핸들링할 이모지들을 정의합니다.                   |
-| RANK_URL                          | 랭킹 웹페이지 URK                         |
-| DEFAULT_AVATAR_URL                | 기본 프로필 이미지 URL                      |
+| 이름                                | 설명                                    |
+|-----------------------------------|---------------------------------------|
+| ENV                               | 배포환경 정의                               |
+| ALLOW_ORIGINS                     | CORS를 허용할 ORIGIN 리스트                  |
+| DB_HOST                           | DB 호스트                                |
+| DB_PORT                           | DB 포트                                 |
+| DATABASE                          | DB 이름                                 |
+| DB_USERNAME                       | DB 접속 유저네임                            |
+| DB_PASSWORD                       | DB 패스워드                               |
+| SLACK_TOKEN                       | 슬랙 토큰                                 |
+| BOT_NAME                          | 슬랙봇 이름                                |
+| ERROR_CHANNEL                     | 슬랙 에러 리포팅 채널                          |
+| SPECIAL_EMOJI                     | 특별한 의미를 가진 이모지                        |
+| LIMIT_GIVE_COUNT_OF_SPECIAL_EMOJI | 매월 다른 멤버에게 줄 수 있는 SPECIAL_EMOJI 제한 개수 |
+| ALLOWED_REACTION_LIST             | 웹훅 리액션으로 허용된 이모지(reaction)들을 정의합니다.   |
+| ALLOWED_EMOJI_TYPES               | 핸들링할 이모지들을 정의합니다.                     |
+| RANK_URL                          | 랭킹 웹페이지 URK                           |
+| DEFAULT_AVATAR_URL                | 기본 프로필 이미지 URL                        |
 
 <br/>
 
@@ -172,6 +172,7 @@ uvicorn app.main:app --port 8080
 🙉 유저 보이기
 @EmojiBot --show_user --slack_id=슬랙ID
 ```
+
 ### 🎖 show_best_member 예시
 
 <img width="499" alt="show_best_member 예시" src="https://user-images.githubusercontent.com/24591259/222969485-290c6d9d-841c-4a01-bd77-12af62db63da.png">
@@ -199,6 +200,7 @@ if [ "$checker" == "0" ]; then
 	cd $SCRIPT_PATH && `uvicorn main:app --port 8080 &`
 fi
 ```
+
 <br/>
 
 # 🤖 Slack Bot 설정

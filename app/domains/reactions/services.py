@@ -158,6 +158,11 @@ class ReactionService(GenericService):
 
     @classmethod
     async def _can_increase_special_emoji(cls, reaction: Reaction) -> bool:
+        """
+        todo: 리팩토링 하면서 일별 카운트 로직을 제거 했음. 현재 로직에서 `LIMIT_GIVE_COUNT_OF_SPECIAL_EMOJI`는
+            매월 이모지를 줄 수 있는 카운트 제한이라고 보면됨.
+            현재는 굳이 매일 줄 수 있는 이모지 제한이 의미없을 것 같아서 유지하는 방향으로 정리
+        """
         count = await cls._repository().count_special_emoji_by_date_and_from_user(
             from_user_id=reaction.from_user_id,
             year=reaction.year,
