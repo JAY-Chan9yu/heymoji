@@ -89,7 +89,6 @@ DB는 `MySQL`을 사용하며 비동기 처리를 위해 `aiomysql`라이브러�
 | ERROR_CHANNEL                     | 슬랙 에러 리포팅 채널                          |
 | SPECIAL_EMOJI                     | 특별한 의미를 가진 이모지                        |
 | LIMIT_GIVE_COUNT_OF_SPECIAL_EMOJI | 매월 다른 멤버에게 줄 수 있는 SPECIAL_EMOJI 제한 개수 |
-| ALLOWED_REACTION_LIST             | 웹훅 리액션으로 허용된 이모지(reaction)들을 정의합니다.   |
 | ALLOWED_EMOJI_TYPES               | 핸들링할 이모지들을 정의합니다.                     |
 | RANK_URL                          | 랭킹 웹페이지 URK                           |
 | DEFAULT_AVATAR_URL                | 기본 프로필 이미지 URL                        |

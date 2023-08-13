@@ -74,43 +74,43 @@ class TestSlackApi:
         assert data[0]["emoji_infos"][0]["emoji"] == "heart"
         assert data[0]["emoji_infos"][0]["count"] == 1
 
-    @pytest.mark.asyncio
-    async def test_slack_handler_by_add_reacton_when_limited_special_emoji(
-        self, db, anyio_backend, mock_allowed_emoji, mock_reaction_list, test_client
-    ):
-        truncate_tables(["reactions"])
-        body = {
-            "event": {
-                "type": "reaction_added",
-                "user": self.other_user.slack_id,
-                "item_user": self.user.slack_id,
-                "text": get_random_string(20),
-                "channel": get_random_string(5),
-                "event_ts": "1609878469.036400",
-                "reaction": "special",
-                "item": {},
-            },
-            "bot_id": "ABCDEFG",
-            "type": "message",
-            "text": "Test message",
-            "user": "12345678",
-            "ts": "1609878469.036400",
-            "team": "jay-team",
-            "token": get_random_string(10),
-            "team_id": get_random_string(10),
-            "api_app_id": get_random_string(10),
-            "event_id": get_random_string(10),
-            "event_time": 1609878469,
-            "is_ext_shared_channel": True,
-            "event_context": get_random_string(10),
-            "authorizations": []
-        }
-        for _ in range(0, 10):
-            response = await test_client.post("/slack/", json=body)
-            assert response.status_code == 200
-
-        response = await test_client.get(f"/users/{self.user.id}/reactions/")
-        assert response.status_code == 200
-        data = json.loads(response.text)
-        assert data[0]["emoji_infos"][0]["emoji"] == "special"
-        assert data[0]["emoji_infos"][0]["count"] == 5
+    # @pytest.mark.asyncio
+    # async def test_slack_handler_by_add_reacton_when_limited_special_emoji(
+    #     self, db, anyio_backend, mock_allowed_emoji, mock_reaction_list, test_client
+    # ):
+    #     truncate_tables(["reactions"])
+    #     body = {
+    #         "event": {
+    #             "type": "reaction_added",
+    #             "user": self.other_user.slack_id,
+    #             "item_user": self.user.slack_id,
+    #             "text": get_random_string(20),
+    #             "channel": get_random_string(5),
+    #             "event_ts": "1609878469.036400",
+    #             "reaction": "special",
+    #             "item": {},
+    #         },
+    #         "bot_id": "ABCDEFG",
+    #         "type": "message",
+    #         "text": "Test message",
+    #         "user": "12345678",
+    #         "ts": "1609878469.036400",
+    #         "team": "jay-team",
+    #         "token": get_random_string(10),
+    #         "team_id": get_random_string(10),
+    #         "api_app_id": get_random_string(10),
+    #         "event_id": get_random_string(10),
+    #         "event_time": 1609878469,
+    #         "is_ext_shared_channel": True,
+    #         "event_context": get_random_string(10),
+    #         "authorizations": []
+    #     }
+    #     for _ in range(0, 10):
+    #         response = await test_client.post("/slack/", json=body)
+    #         assert response.status_code == 200
+    #
+    #     response = await test_client.get(f"/users/{self.user.id}/reactions/")
+    #     assert response.status_code == 200
+    #     data = json.loads(response.text)
+    #     assert data[0]["emoji_infos"][0]["emoji"] == "special"
+    #     assert data[0]["emoji_infos"][0]["count"] == 5

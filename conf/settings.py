@@ -27,10 +27,6 @@ class BaseConfig(BaseSettings):
 
     SPECIAL_EMOJI: Optional[str] = Field(env="SPECIAL_EMOJI", default="trophy")
     LIMIT_GIVE_COUNT_OF_SPECIAL_EMOJI: int = Field(env="LIMIT_GIVE_COUNT_OF_SPECIAL_EMOJI", default=1000)
-    ALLOWED_REACTION_LIST: list = Field(
-        env="ALLOWED_REACTION_LIST",
-        default=["pray", "heart", "eye_shaking", "+1", "기도", "기쁨", "kkkk", "trophy", "트로피"]
-    )
     ALLOWED_EMOJI_TYPES: list = Field(
         env="ALLOWED_EMOJI_TYPES",
         default=[

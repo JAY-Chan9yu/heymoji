@@ -1,4 +1,5 @@
 import asyncio
+import itertools
 import logging
 from typing import Union, Optional, Callable
 
@@ -11,7 +12,6 @@ from app.utils.slack_message_format import get_command_error_msg, get_help_msg, 
 from app.utils.utils import slack_command_exception_handler, parsing_slack_command_to_dict, send_slack_msg
 from conf import settings
 
-
 logger = logging.getLogger(__name__)
 
 SLACK_EVENT_HOOKS = Union[
@@ -20,6 +20,12 @@ SLACK_EVENT_HOOKS = Union[
     SlackChallengeHook,
     SlackBotDirectMessageHook
 ]
+
+ALLOWED_REACTION_LIST = list(
+    itertools.chain.from_iterable([
+        emoji["emoji_names"] for emoji in settings.config.ALLOWED_EMOJI_TYPES
+    ])
+)
 
 
 class SlackService:
@@ -64,7 +70,7 @@ class SlackService:
 
     @staticmethod
     def _is_allowed_reaction(reaction: str) -> bool:
-        return reaction in settings.config.ALLOWED_REACTION_LIST
+        return reaction in ALLOWED_REACTION_LIST
 
     @classmethod
     async def mention_command_handler(cls, event: SlackMentionEvent):
